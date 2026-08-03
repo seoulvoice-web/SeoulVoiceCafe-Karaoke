@@ -1,0 +1,94 @@
+{
+  "generated_at": "2026-02-01T23:31:56.317447Z",
+  "db_path": "C:\\Users\\MiPC\\OneDrive\\Escritorio\\SEOUL_VOICE\\instance\\users.db",
+  "total_users": 3,
+  "admin_users": 2,
+  "total_tickets": 79,
+  "total_revenue_bob": 3592.5,
+  "reservations_last_30d": 156,
+  "revenue_last_30d_bob": 7130.0,
+  "monthly": [
+    [
+      "2026-02",
+      37,
+      1635.0
+    ],
+    [
+      "2026-01",
+      42,
+      1957.5
+    ]
+  ],
+  "top_buyers": [
+    [
+      "14050037",
+      37,
+      1745.0
+    ],
+    [
+      "10032968",
+      19,
+      890.0
+    ],
+    [
+      "16516",
+      16,
+      590.0
+    ],
+    [
+      "1002222",
+      7,
+      335.0
+    ],
+    [
+      "00000000",
+      7,
+      245.0
+    ],
+    [
+      "321321",
+      5,
+      250.0
+    ],
+    [
+      "3773",
+      4,
+      200.0
+    ],
+    [
+      "38282",
+      3,
+      105.0
+    ],
+    [
+      "31521",
+      3,
+      210.0
+    ],
+    [
+      "82727",
+      2,
+      100.0
+    ]
+  ],
+  "users_with_reservations_sample": [
+    [
+      1,
+      "aldahir",
+      "layons816@gmail.com",
+      0
+    ],
+    [
+      3,
+      "ale",
+      null,
+      0
+    ],
+    [
+      4,
+      "james",
+      null,
+      0
+    ]
+  ]
+}

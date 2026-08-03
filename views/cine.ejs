@@ -1,0 +1,30 @@
+<%- include('layout', { body: (function(){ %>
+<h2>Mini Cine</h2>
+<div class="mb-3">
+  <label class="form-label">Selecciona un video</label>
+  <select id="videoSelect" class="form-select mb-3">
+    <% videos.forEach(function(v, idx) { %>
+      <option value="<%= idx %>"><%= v.title %></option>
+    <% }); %>
+  </select>
+  <div id="player">
+    <video id="mp4player" width="720" controls>
+      <source src="<%= videos[0].src %>" type="video/mp4">
+      Tu navegador no soporta video.
+    </video>
+  </div>
+</div>
+<script>
+  const videos = <%- JSON.stringify(videos) %>;
+  const select = document.getElementById('videoSelect');
+  select.addEventListener('change', () => {
+    const v = videos[select.value];
+    const player = document.getElementById('player');
+    if (v.type === 'mp4') {
+      player.innerHTML = `<video id="mp4player" width="720" controls><source src="${v.src}" type="video/mp4">Tu navegador no soporta video.</video>`;
+    } else if (v.type === 'youtube') {
+      player.innerHTML = `<iframe width="720" height="405" src="${v.src}" frameborder="0" allowfullscreen></iframe>`;
+    }
+  });
+</script>
+<% }).call(this) }) %>

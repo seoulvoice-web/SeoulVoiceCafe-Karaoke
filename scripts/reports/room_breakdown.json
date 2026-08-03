@@ -1,0 +1,18 @@
+{
+  "generated_at": "2026-02-12T00:00:00Z",
+  "db_path": "sqlite:///users.db",
+  "per_room": [
+    {
+      "room": 1,
+      "tickets": 0,
+      "revenue_bob": 0.0
+    },
+    {
+      "room": 2,
+      "tickets": 0,
+      "revenue_bob": 0.0
+    }
+  ],
+  "total_tickets": 0,
+  "total_revenue_bob": 0.0
+}
