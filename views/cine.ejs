@@ -1,4 +1,24 @@
-<%- include('layout', { body: (function(){ %>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Seoul Voice</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">Seoul Voice</a>
+    <div class="d-flex">
+      <span class="navbar-text me-3">Bienvenido, <%= user ? user.username : 'invitado' %></span>
+      <a class="btn btn-outline-danger" href="/logout">Cerrar sesión</a>
+    </div>
+  </div>
+</nav>
+<div class="container py-4">
+
 <h2>Mini Cine</h2>
 <div class="mb-3">
   <label class="form-label">Selecciona un video</label>
@@ -10,21 +30,12 @@
   <div id="player">
     <video id="mp4player" width="720" controls>
       <source src="<%= videos[0].src %>" type="video/mp4">
-      Tu navegador no soporta video.
     </video>
   </div>
 </div>
-<script>
-  const videos = <%- JSON.stringify(videos) %>;
-  const select = document.getElementById('videoSelect');
-  select.addEventListener('change', () => {
-    const v = videos[select.value];
-    const player = document.getElementById('player');
-    if (v.type === 'mp4') {
-      player.innerHTML = `<video id="mp4player" width="720" controls><source src="${v.src}" type="video/mp4">Tu navegador no soporta video.</video>`;
-    } else if (v.type === 'youtube') {
-      player.innerHTML = `<iframe width="720" height="405" src="${v.src}" frameborder="0" allowfullscreen></iframe>`;
-    }
-  });
-</script>
-<% }).call(this) }) %>
+<script src="/js/cine.js"></script>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
