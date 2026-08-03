@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Seoul Voice</title>
+    <!-- Usar versiones locales para generación de PDF (wkhtmltopdf puede bloquear recursos remotos) -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/fontawesome.min.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=2">
+    <!-- Ocultar elementos no deseados en PDF/impresión y ajustar ancho de contenido -->
+    <style>
+      /* Usar la clase `pdf-render` aplicada al <body> para evitar condicionales Jinja dentro de CSS */
+      .pdf-render #sidebar-wrapper,
+      .pdf-render .contact-fab-wrapper,
+      .pdf-render nav.navbar,
+      .pdf-render #sidebarToggle { display: none !important; }
+
+      /* Asegurar visibilidad del FAB en páginas normales (PC y móvil). La factura/home puede sobreescribir esta regla. */
+      .contact-fab-wrapper { display: flex; }
+
+      .pdf-render #page-content-wrapper { width: 100% !important; margin: 0 !important; }
+
+      @media print {
+        #sidebar-wrapper, .contact-fab-wrapper, nav.navbar, #sidebarToggle { display: none !important; }
+        #page-content-wrapper { width: 100% !important; margin: 0 !important; }
+      }
+    </style>
+  </head>
+  <body class="{{ 'pdf-render' if pdf_render|default(False) else '' }}">
+    <div class="d-flex" id="wrapper">
+      {% if user %}
+      <div class="border-end bg-white" id="sidebar-wrapper">
+        <div class="sidebar-heading border-bottom bg-light d-flex align-items-center gap-2">
+          <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Seoul Voice" class="logo-img" />
+          <strong class="ms-1">Seoul Voice</strong>
+        </div>
+        <div class="list-group list-group-flush">
+          <a href="/" class="list-group-item list-group-item-action list-group-item-light p-3"><i class="fa-solid fa-house me-2"></i>Inicio</a>
+          <a href="/cine" class="list-group-item list-group-item-action list-group-item-light p-3"><i class="fa-solid fa-film me-2"></i>Mini Cine</a>
+          <a href="/notifications" class="list-group-item list-group-item-action list-group-item-light p-3"><i class="fa-solid fa-bell me-2"></i>Notificaciones
+            {% if public_notifications_unread_count and public_notifications_unread_count > 0 %}
+              <span class="badge bg-danger rounded-pill ms-2">{{ public_notifications_unread_count }}</span>
+            {% endif %}
+          </a>
+          <a href="/karaoke" class="list-group-item list-group-item-action list-group-item-light p-3"><i class="fa-solid fa-microphone me-2"></i>Karaoke</a>
+
+          <div class="list-group-item list-group-item-light p-0">
+            <div class="d-flex align-items-center justify-content-between p-3">
+              <span class="text-decoration-none text-dark"><i class="fa-solid fa-boxes-stacked me-2"></i>Inventario / Gestión</span>
+              <button class="btn btn-sm btn-outline-secondary btn-collapse-toggle" data-collapse-target="#gestionarCollapse" aria-expanded="false" aria-controls="gestionarCollapse"><i class="fa-solid fa-angle-down"></i></button>
+            </div>
+          </div>
+          <div class="collapse ps-3" id="gestionarCollapse">
+            {% if user and user.is_admin %}
+              <a href="/admin" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-users-gear me-2"></i>Admin / Personal</a>
+              <a href="/staff/new" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-user-plus me-2"></i>Agregar personal</a>
+              <a href="/admin/users" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-users me-2"></i>Ver usuarios</a>
+              <a href="/admin/notifications" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-bell me-2"></i>Notificaciones de pagos
+                {% if notifications_unread_count and notifications_unread_count > 0 %}
+                  <span class="badge bg-danger rounded-pill ms-2">{{ notifications_unread_count }}</span>
+                {% endif %}
+              </a>
+              <a href="/inventory" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-warehouse me-2"></i>Inventario</a>
+              <a href="/admin/rooms" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-chart-column me-2"></i>Desglose por salas</a>
+            {% endif %}
+            <a href="/productos" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-box-open me-2"></i>Productos</a>
+            <a href="/ramos" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-seedling me-2"></i>Ramos de rosas</a>
+            <a href="/heladeria" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-ice-cream me-2"></i>Heladería</a>
+            <a href="/clientes" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-address-card me-2"></i>Clientes</a>
+            <a href="/contactos" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-address-book me-2"></i>Contactos</a>
+            <a href="/ubicacion" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-location-dot me-2"></i>Ubicación</a>
+            <a href="/galeria" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-images me-2"></i>Galería</a>
+            <a href="/reservas" class="list-group-item list-group-item-action list-group-item-light p-2" title="Reservas activas"><i class="fa-solid fa-calendar-check me-2"></i>Reservas / Citas <span class="badge bg-primary rounded-pill ms-2">2</span></a>
+            <a href="/salas" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-door-open me-2"></i>Salas</a>
+            <a href="/precios" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-tag me-2"></i>Precios</a>
+            <a href="/eventos" class="list-group-item list-group-item-action list-group-item-light p-2" title="Próximos eventos"><i class="fa-solid fa-calendar-days me-2"></i>Eventos <span class="badge bg-success rounded-pill ms-2">Próx</span></a>
+            {% if user and user.is_admin %}
+              <a href="/asistencia" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-user-check me-2"></i>Asistencia (admin/personal)</a>
+            {% endif %}
+          </div>
+
+          <a href="/logout" class="list-group-item list-group-item-action list-group-item-light p-3">Cerrar sesión</a>
+        </div>
+      </div>
+      {% endif %}
+      <div id="page-content-wrapper" class="w-100">
+        {% if not (pdf_render|default(False)) %}
+        <nav class="navbar navbar-light bg-light border-bottom">
+          <div class="container-fluid d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+              {% if user %}
+                <button class="btn btn-outline-secondary me-2" id="sidebarToggle" aria-label="Toggle sidebar">&#9776;</button>
+                <span class="navbar-text">Bienvenido, {{ user.username }}</span>
+              {% else %}
+                <span class="navbar-text"></span>
+              {% endif %}
+              {% if user and user.is_admin %}
+                <a class="btn btn-sm btn-outline-primary ms-3" href="/admin/rooms">Desglose por salas</a>
+              {% endif %}
+              <a class="btn btn-sm btn-outline-secondary ms-3" href="/asistencia">Asistencia</a>
+              <span class="ms-3 small text-muted">URL base: {{ url_for('login', _external=True) }}</span>
+            </div>
+            {% if not user %}
+              <a class="btn btn-outline-primary" href="{{ url_for('login', _external=True) }}">Login</a>
+            {% else %}
+              {% if user.is_admin %}
+                <a class="btn btn-sm btn-outline-secondary position-relative ms-2" href="/admin/notifications" title="Notificaciones">
+                  <i class="fa-solid fa-bell"></i>
+                  {% if notifications_unread_count and notifications_unread_count > 0 %}
+                    <span class="badge bg-danger rounded-pill position-absolute" style="top:-6px;right:-6px;">{{ notifications_unread_count }}</span>
+                  {% endif %}
+                </a>
+              {% endif %}
+            {% endif %}
+          </div>
+        </nav>
+        {% endif %}
+        <div class="container-fluid mt-3">
+          {% block content %}{% endblock %}
+        </div>
+      </div>
+    </div>
+    {% if not (pdf_render|default(False)) %}
+    <script src="/static/js/bootstrap.bundle.min.js?v=2"></script>
+    <script src="/static/js/sidebar.js?v=2"></script>
+    <!-- Floating contact FAB -->
+    <div class="contact-fab-wrapper">
+      <button id="contactFab" class="contact-fab" aria-label="Contactar" style="background:#2196F3">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div id="fabMenu" class="fab-menu" aria-hidden="true">
+        <a class="fab-item" href="https://wa.me/59163050841" target="_blank" rel="noopener" title="WhatsApp">
+          <img src="/static/img/whatsapp-icon.svg" alt="WhatsApp" />
+        </a>
+        <a class="fab-item" href="https://facebook.com/" target="_blank" rel="noopener" title="Facebook">
+          <img src="/static/img/facebook-icon.svg" alt="Facebook" />
+        </a>
+        <a class="fab-item" href="tel:+59163050841" title="Llamar">
+          <img src="/static/img/phone-icon.svg" alt="Teléfono" />
+        </a>
+        <a class="fab-item" href="mailto:ejemplo@correo.com" title="Correo">
+          <img src="/static/img/mail-icon.svg" alt="Correo" />
+        </a>
+      </div>
+    </div>
+    <script>
+    // @ts-nocheck
+      (function(){
+        var wrapper = document.querySelector('.contact-fab-wrapper');
+        if (!wrapper) return;
+        var btn = document.getElementById('contactFab');
+        var menu = document.getElementById('fabMenu');
+        // Hide on auth pages or when body has class pdf-render
+        try {
+          if (document.body.classList.contains('auth-page') || document.body.classList.contains('pdf-render')) {
+            wrapper.style.display = 'none';
+            return;
+          }
+        } catch (e) {}
+
+        // Initialize closed state if none
+        if (!wrapper.classList.contains('open')) wrapper.classList.add('closed');
+
+        // If the page shows an invoice card (actions at bottom), lift the FAB to avoid overlap
+        try {
+          if (document.querySelector('.invoice-card')) wrapper.classList.add('avoid-bottom');
+        } catch (e) {}
+
+        function openMenu(){ wrapper.classList.remove('closed'); wrapper.classList.add('open'); wrapper.setAttribute('aria-expanded','true'); if(menu) menu.setAttribute('aria-hidden','false'); }
+        function closeMenu(){ wrapper.classList.remove('open'); wrapper.classList.add('closed'); wrapper.setAttribute('aria-expanded','false'); if(menu) menu.setAttribute('aria-hidden','true'); }
+
+        btn.addEventListener('click', function(e){
+          if (wrapper.classList.contains('open')) closeMenu(); else openMenu();
+        });
+
+        // close when clicking outside
+        document.addEventListener('click', function(e){
+          if (!wrapper.contains(e.target)) closeMenu();
+        }, true);
+
+        // keyboard: Esc to close
+        document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeMenu(); });
+      })();
+    </script>
+    <script>
+    // @ts-nocheck
+      // Refuerzo: bind seguro y forzar visibilidad/color si algo bloqueó el FAB
+      document.addEventListener('DOMContentLoaded', function () {
+        try {
+          var wrapper = document.querySelector('.contact-fab-wrapper');
+          var btn = document.getElementById('contactFab');
+          var menu = document.getElementById('fabMenu');
+          if (!wrapper || !btn) return;
+          // Forzar visibilidad en páginas normales (la factura tiene su propio CSS para ocultarlo)
+          if (!document.body.classList.contains('pdf-render') && !document.body.classList.contains('auth-page')) {
+            wrapper.style.display = 'flex';
+          }
+          // Forzar color si por alguna razón no aplicó
+          try { btn.style.background = getComputedStyle(document.documentElement).getPropertyValue('--fab-color') || '#2196F3'; } catch (e) { btn.style.background = '#2196F3'; }
+
+          function open() { wrapper.classList.remove('closed'); wrapper.classList.add('open'); if (menu) menu.setAttribute('aria-hidden','false'); }
+          function close() { wrapper.classList.remove('open'); wrapper.classList.add('closed'); if (menu) menu.setAttribute('aria-hidden','true'); }
+
+          btn.addEventListener('click', function (ev) { ev.stopPropagation(); if (wrapper.classList.contains('open')) close(); else open(); });
+          document.addEventListener('click', function (e) { if (!wrapper.classList.contains('open')) return; if (wrapper.contains(e.target)) return; close(); });
+          document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+        } catch (e) { console.log('FAB init error', e); }
+      });
+    </script>
+    <!-- Toast container and helper -->
+    <div id="toast-container" class="position-fixed top-0 end-0 p-3" style="z-index:1080"></div>
+    <script>
+    // @ts-nocheck
+      window.showToast = function(message, type, opts){
+        opts = opts || {};
+        var container = document.getElementById('toast-container');
+        if (!container) return;
+        var toastId = 'toast-' + Math.random().toString(36).slice(2,9);
+        var bg = 'bg-white';
+        var textClass = 'text-dark';
+        if (type === 'success') { bg = 'bg-success text-white'; textClass='text-white'; }
+        if (type === 'danger' || type === 'error') { bg = 'bg-danger text-white'; textClass='text-white'; }
+        if (type === 'warning') { bg = 'bg-warning text-dark'; textClass='text-dark'; }
+        var html = `
+          <div id="${toastId}" class="toast ${bg}" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+              <div class="toast-body ${textClass}" style="white-space:pre-wrap">${message}</div>
+              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+          </div>`;
+        var tmp = document.createElement('div'); tmp.innerHTML = html;
+        var el = tmp.firstElementChild;
+        container.appendChild(el);
+        var toast = new bootstrap.Toast(el, { delay: (opts.delay||4000) });
+        toast.show();
+        // remove from DOM after hidden
+        el.addEventListener('hidden.bs.toast', function(){ el.remove(); });
+        return el;
+      };
+
+      // Convert existing alert elements inserted into .container into toasts (fallback)
+      (function(){
+        var c = document.querySelector('.container');
+        if (!c) return;
+        var observer = new MutationObserver(function(mutations){
+          mutations.forEach(function(m){
+            m.addedNodes.forEach(function(node){
+              try{
+                if (node.nodeType===1 && node.classList.contains('alert')){
+                  var msg = node.textContent || '';
+                  var type = 'info';
+                  if (node.classList.contains('alert-success')) type='success';
+                  if (node.classList.contains('alert-danger')) type='danger';
+                  if (node.classList.contains('alert-warning')) type='warning';
+                  showToast(msg.trim(), type);
+                  node.remove();
+                }
+                } catch (e) { }
+            });
+          });
+        });
+        observer.observe(c, { childList: true });
+      })();
+    </script>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <script type="application/json" id="flashed-messages">{{ messages|tojson|safe }}</script>
+        <script>
+        // @ts-nocheck
+          window.addEventListener('load', function(){
+            try {
+              var raw = document.getElementById('flashed-messages') ? document.getElementById('flashed-messages').textContent : '[]';
+              var msgs = JSON.parse(raw || '[]');
+              msgs.forEach(function(m){
+                var type = 'info';
+                if (m[0] === 'message' || m[0] === 'info') type = 'info';
+                if (m[0] === 'error' || m[0] === 'danger') type = 'danger';
+                if (m[0] === 'success') type = 'success';
+                // m[1] is the message text
+                window.showToast(m[1], type);
+              });
+            } catch (e) { }
+          });
+        </script>
+      {% endif %}
+    {% endwith %}
+    {% endif %}
+    <!-- Socket.IO client -->
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <script>
+    // Conectar a Socket.IO y mostrar notificaciones entrantes
+    document.addEventListener('DOMContentLoaded', function(){
+      try{
+        var socket = io();
+        socket.on('connect', function(){ console.log('SocketIO conectado');
+          try {
+            // Auto-join admins room if user is admin
+            {% if session.get('user') and session.get('user').get('is_admin') %}
+              socket.emit('join_admins', {});
+            {% endif %}
+          } catch(e) { }
+        });
+        socket.on('notification', function(data){
+          try{ window.showToast(data.message || 'Notificación', 'info'); } catch(e){ console.log('toast error', e); }
+        });
+        // reservation updates
+        socket.on('reservation_update', function(data){
+          try { window.showToast((data && data.action ? data.action.toUpperCase() + ': ' : '') + (data && data.id ? data.id : ''), 'info'); } catch(e){}
+        });
+        // karaoke events
+        socket.on('karaoke_event', function(data){
+          try { window.showToast((data && data.action) ? data.action : 'Karaoke', 'info'); } catch(e){}
+        });
+      }catch(e){ console.log('SocketIO init error', e); }
+    });
+    </script>
+  </body>
+</html>

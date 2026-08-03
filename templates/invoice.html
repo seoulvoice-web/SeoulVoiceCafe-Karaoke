@@ -1,0 +1,203 @@
+{% extends 'layout.html' %}
+{% block content %}
+<style>
+  /* Print-friendly invoice styles */
+  .invoice-card { max-width: 900px; margin: 0 auto; }
+  /* Ocultar FAB en la vista de factura */
+  .contact-fab-wrapper { display: none !important; }
+  /* Asegurar que los controles "no-print" sean visibles en pantalla (incluido móvil) */
+  .no-print { display: inline-block !important; }
+  @media print {
+    body * { visibility: hidden; }
+    .invoice-card, .invoice-card * { visibility: visible; }
+    .invoice-card { position: absolute; left: 0; top: 0; width: 100%; }
+    /* Ocultar controles de UI (enlaces y botones) en la versión impresa */
+    .no-print, a.btn.no-print, button.no-print, a.btn, button.btn { display: none !important; }
+  }
+  .invoice-header { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
+  </style>
+
+<div class="invoice-card py-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="d-flex justify-content-between invoice-header">
+        <div>
+          <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Logo" style="height:56px;" />
+          <h5 class="mt-2">Seoul Voice</h5>
+          <div class="small text-muted">Av. Cochabamba- al frente de la inglesia jesus obrero - galeria - Piso 1 -- Tel: 63050841 - 72554129</div>
+        </div>
+        <div class="text-end">
+          <h4>Ticket</h4>
+          <div><strong>N :</strong> {{ invoice_number }}</div>
+          <div><strong>Fecha emisión:</strong> {{ issued_at.strftime('%Y-%m-%d') if issued_at else '' }}</div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-12 col-md-6 text-start">
+          <h6>Cliente</h6>
+          <p class="mb-0"><strong>{{ ticket.buyer_name }}</strong></p>
+          <p class="mb-0">ID: {{ ticket.buyer_id }}</p>
+        </div>
+        <div class="col-12 col-md-6 d-flex flex-column align-items-end text-md-end text-end">
+          <div style="width:100%; max-width:320px;">
+            <h6>Detalle</h6>
+            <p class="mb-0">Sala: {{ ticket.room_number }}</p>
+            <p class="mb-0">Entrada: <span id="entryTime">{{ ticket.entry_time.strftime('%H:%M:%S') if ticket.entry_time else '' }}</span></p>
+            <p class="mb-0">Salida: {{ ticket.exit_time.strftime('%H:%M') if ticket.exit_time else '' }}</p>
+            <p class="mb-0">Promoción: {{ ticket.promo_type or 'ninguna' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Descripción</th>
+              <th class="text-center">Cant.</th>
+              <th class="text-end">Precio unit.</th>
+              <th class="text-end">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Boleto (entrada)</td>
+              <td class="text-center">1</td>
+              <td class="text-end">{{ '%.2f'|format(base_price) }} Bs</td>
+              <td class="text-end">{{ '%.2f'|format(base_price) }} Bs</td>
+            </tr>
+            {% for it in snack_items %}
+            <tr>
+              <td>{{ it.name }}</td>
+              <td class="text-center">{{ it.qty }}</td>
+              <td class="text-end">{{ '%.2f'|format(it.price) }} Bs</td>
+              <td class="text-end">{{ '%.2f'|format(it.price * it.qty) }} Bs</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="3" class="text-end">Subtotal</th>
+              <th class="text-end">{{ '%.2f'|format(base_price + snack_total) }} Bs</th>
+            </tr>
+            {% if tax_rate and tax_rate > 0 %}
+            <tr>
+              <th colspan="3" class="text-end">Impuesto ({{ (tax_rate*100)|round(2) }}%)</th>
+              <th class="text-end">{{ '%.2f'|format(tax_amount) }} Bs</th>
+            </tr>
+            <tr>
+              <th colspan="3" class="text-end">Total</th>
+              <th class="text-end">{{ '%.2f'|format(total_with_tax) }} Bs</th>
+            </tr>
+            {% else %}
+            <tr>
+              <th colspan="3" class="text-end">Total a pagar</th>
+              <th class="text-end">{{ '%.2f'|format(ticket.price) }} Bs</th>
+            </tr>
+            {% endif %}
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-between mt-4">
+        <div class="small text-muted">
+          <p class="mb-1">Condiciones de pago: Pago al contado. Métodos: Efectivo, transferencia, Yape/Plin.</p>
+          <p class="mb-0">Contacto: ejemplo@correo.com — 63050841 - 72554129</p>
+        </div>
+        {% if not (pdf_render|default(False)) %}
+        <div class="text-end">
+          <a class="btn btn-secondary no-print" href="{{ url_for('karaoke') }}">Volver</a>
+          {% if pdf_available %}
+          <a class="btn btn-outline-primary no-print" href="{{ url_for('invoice_pdf', ticket_id=ticket.id) }}">Descargar PDF</a>
+          {% else %}
+          <button class="btn btn-outline-secondary no-print" onclick="window.print()" title="Descargar PDF (desde el navegador)">Descargar PDF</button>
+          <a class="btn btn-link no-print" href="/admin/settings">Configurar wkhtmltopdf</a>
+          {% endif %}
+          <button id="printBtn" type="button" class="btn btn-primary no-print" onclick="window.print()">Imprimir</button>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% if not (pdf_render|default(False)) %}
+<script>
+// @ts-nocheck
+  (function(){
+    var btn = document.getElementById('printBtn');
+    if (!btn) return;
+    var meta = document.getElementById('invoiceMeta');
+    var pdfAvailable = false;
+    var pdfUrl = '';
+    if (meta) {
+      pdfAvailable = meta.dataset.pdfAvailable === '1';
+      pdfUrl = meta.dataset.pdfUrl || '';
+    }
+
+    // Ocultar FAB en la página de factura para evitar solapamientos
+    try {
+      var fab = document.querySelector('.contact-fab-wrapper');
+      if (fab) {
+        fab.style.display = 'none';
+      }
+    } catch (e) { console.log('FAB hide failed', e); }
+
+    function isMobile() {
+      try {
+        return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (window.matchMedia && window.matchMedia('(max-width: 768px)').matches);
+      } catch (e) { return false; }
+    }
+
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      // Si hay PDF disponible, preferimos descargar/abrir el PDF (más fiable en móvil)
+      if (pdfAvailable && pdfUrl) {
+        window.location.href = pdfUrl;
+        return;
+      }
+
+      // En móviles algunos navegadores limitan window.print(); intentamos abrir una nueva ventana imprimible
+      if (isMobile()) {
+        try {
+          var content = document.querySelector('.invoice-card');
+          if (!content) { window.print(); return; }
+          var newWin = window.open('', '_blank');
+          if (!newWin) { window.print(); return; }
+          var doc = newWin.document;
+          doc.open();
+          // copiar estilos necesarias
+          var styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style')).map(function(n){ return n.outerHTML; }).join('\n');
+          doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">' + styles + '</head><body>' + content.outerHTML + '</body></html>');
+          doc.close();
+          // esperar a que cargue y lanzar print
+          newWin.focus();
+          setTimeout(function(){
+            try { newWin.print(); } catch (e) { console.log('print fallback failed', e); }
+          }, 700);
+          return;
+        } catch (e) {
+          console.log('mobile print fallback error', e);
+          window.print();
+          return;
+        }
+      }
+
+      // Desktop: abrir diálogo de impresión
+      window.print();
+    });
+    // Mostrar hora exacta del PC para 'Entrada'
+    try {
+      var et = document.getElementById('entryTime');
+      if (et) {
+        var now = new Date();
+        function _pad(n){ return n.toString().padStart(2,'0'); }
+        var timeStr = _pad(now.getHours()) + ':' + _pad(now.getMinutes()) + ':' + _pad(now.getSeconds());
+        et.textContent = timeStr;
+      }
+    } catch (e) { console.log('entry time set failed', e); }
+  })();
+</script>
+<div id="invoiceMeta" data-pdf-available="{{ '1' if pdf_available else '0' }}" data-pdf-url="{{ url_for('invoice_pdf', ticket_id=ticket.id) if pdf_available else '' }}" style="display:none"></div>
+{% endif %}
+{% endblock %}

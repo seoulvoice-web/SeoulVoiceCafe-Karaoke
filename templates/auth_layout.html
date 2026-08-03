@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Seoul Voice - Login</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/fontawesome.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+  </head>
+  <body>
+    <div class="d-flex collapsed" id="wrapper">
+      {% if user and not (hide_sidebar|default(false)) %}
+      <div class="border-end bg-white" id="sidebar-wrapper">
+        <div class="sidebar-heading border-bottom bg-light d-flex align-items-center gap-2">
+          <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Seoul Voice" class="logo-img" />
+          <strong class="ms-1">Seoul Voice</strong>
+        </div>
+        <div class="list-group list-group-flush">
+          <a href="/" class="list-group-item list-group-item-action list-group-item-light p-3"><i class="fa-solid fa-house me-2"></i>Inicio</a>
+          <a href="/cine" class="list-group-item list-group-item-action list-group-item-light p-3"><i class="fa-solid fa-film me-2"></i>Mini Cine</a>
+          <a href="/notifications" class="list-group-item list-group-item-action list-group-item-light p-3"><i class="fa-solid fa-bell me-2"></i>Notificaciones
+            {% if public_notifications_unread_count and public_notifications_unread_count > 0 %}
+              <span class="badge bg-danger rounded-pill ms-2">{{ public_notifications_unread_count }}</span>
+            {% endif %}
+          </a>
+          <a href="/karaoke" class="list-group-item list-group-item-action list-group-item-light p-3"><i class="fa-solid fa-microphone me-2"></i>Karaoke</a>
+
+          <div class="list-group-item list-group-item-light p-0">
+            <div class="d-flex align-items-center justify-content-between p-3">
+              <a href="/inventario" class="text-decoration-none text-dark"><i class="fa-solid fa-boxes-stacked me-2"></i>Inventario / Gestión</a>
+              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#gestionarCollapse" aria-expanded="false" aria-controls="gestionarCollapse"><i class="fa-solid fa-angle-down"></i></button>
+            </div>
+          </div>
+          <div class="collapse ps-3" id="gestionarCollapse">
+            {% if user and user.is_admin %}
+              <a href="/admin" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-users-gear me-2"></i>Admin / Personal</a>
+              <a href="/staff/new" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-user-plus me-2"></i>Agregar personal</a>
+              <a href="/admin/notifications" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-bell me-2"></i>Notificaciones de pagos
+                {% if notifications_unread_count and notifications_unread_count > 0 %}
+                  <span class="badge bg-danger rounded-pill ms-2">{{ notifications_unread_count }}</span>
+                {% endif %}
+              </a>
+            {% endif %}
+            <a href="/productos" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-box-open me-2"></i>Productos</a>
+            <a href="/ramos" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-seedling me-2"></i>Ramos de rosas</a>
+            <a href="/contactos" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-address-book me-2"></i>Contactos</a>
+            <a href="/ubicacion" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-location-dot me-2"></i>Ubicación</a>
+            <a href="/galeria" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-images me-2"></i>Galería</a>
+            <a href="/reservas" class="list-group-item list-group-item-action list-group-item-light p-2" title="Reservas activas"><i class="fa-solid fa-calendar-check me-2"></i>Reservas / Citas <span class="badge bg-primary rounded-pill ms-2">2</span></a>
+            <a href="/salas" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-door-open me-2"></i>Salas</a>
+            <a href="/precios" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-tag me-2"></i>Precios</a>
+            <a href="/eventos" class="list-group-item list-group-item-action list-group-item-light p-2" title="Próximos eventos"><i class="fa-solid fa-calendar-days me-2"></i>Eventos <span class="badge bg-success rounded-pill ms-2">Próx</span></a>
+            {% if user and user.is_admin %}
+              <a href="/asistencia" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-user-check me-2"></i>Asistencia (admin/personal)</a>
+            {% endif %}
+          </div>
+
+          <!-- submenu visible removed to avoid duplicate links; collapse contains items -->
+
+          <a href="/logout" class="list-group-item list-group-item-action list-group-item-light p-3">Cerrar sesión</a>
+        </div>
+      </div>
+      {% endif %}
+
+      <div id="page-content-wrapper" class="w-100 d-flex align-items-center justify-content-center auth-page" style="min-height:100vh;">
+        <div class="container py-4">
+          <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+              <div class="text-center mb-1">
+                <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Seoul Voice" class="logo-img" style="width:110px;height:110px;" />
+              </div>
+              {% block content %}{% endblock %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

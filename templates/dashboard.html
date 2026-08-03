@@ -1,0 +1,171 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-12">
+      <div id="homeCarousel" class="carousel slide home-hero mb-3" data-bs-ride="carousel" data-bs-interval="5000" data-bs-pause="false">
+        <div class="carousel-indicators">
+          <button type="button" data-bs-target="#homeCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Karaoke"></button>
+          <button type="button" data-bs-target="#homeCarousel" data-bs-slide-to="1" aria-label="Heladeria"></button>
+          <button type="button" data-bs-target="#homeCarousel" data-bs-slide-to="2" aria-label="MiniCine"></button>
+          <button type="button" data-bs-target="#homeCarousel" data-bs-slide-to="3" aria-label="Reservas"></button>
+          <button type="button" data-bs-target="#homeCarousel" data-bs-slide-to="4" aria-label="Inventario"></button>
+          <button type="button" data-bs-target="#homeCarousel" data-bs-slide-to="5" aria-label="Admin"></button>
+        </div>
+        <div class="carousel-inner">
+          <div class="carousel-item active" style="background-image: url('/static/img/seoul3.svg')">
+            <div class="carousel-caption d-md-block text-start">
+              <div class="card-slide hero-content">
+                <h1 class="hero-title">Karaoke</h1>
+                <p class="hero-lead">Gestiona sesiones y reservas de Karaoke.</p>
+                <a href="/karaoke" class="btn btn-gradient hero-cta">Ir a Karaoke</a>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item" style="background-image: url('/static/img/seoul2.svg')">
+            <div class="carousel-caption d-md-block text-start">
+              <div class="card-slide hero-content">
+                <h1 class="hero-title">Heladería</h1>
+                <p class="hero-lead">Compra helados y snacks desde el panel de inicio.</p>
+                <a href="/heladeria" class="btn btn-gradient hero-cta">Ir a Heladería</a>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item" style="background-image: url('/static/img/seoul1.svg')">
+            <div class="carousel-caption d-md-block text-start">
+              <div class="card-slide hero-content">
+                <h1 class="hero-title">Mini Cine</h1>
+                <p class="hero-lead">Accede a la gestión del Mini Cine.</p>
+                <a href="/cine" class="btn btn-gradient hero-cta">Ir a Mini Cine</a>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item" style="background-image: url('/static/img/placeholder.svg')">
+            <div class="carousel-caption d-md-block text-start">
+              <div class="card-slide hero-content">
+                <h1 class="hero-title">Reservas</h1>
+                <p class="hero-lead">Consulta y administra tus reservas.</p>
+                <a href="/reservas" class="btn btn-gradient hero-cta">Ir a Reservas</a>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item" style="background-image: url('/static/img/rosas_10.svg')">
+            <div class="carousel-caption d-md-block text-start">
+              <div class="card-slide hero-content">
+                <h1 class="hero-title">Inventario</h1>
+                <p class="hero-lead">Revisa y gestiona productos y stock.</p>
+                <a href="/inventory" class="btn btn-gradient hero-cta">Ir a Inventario</a>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item" style="background-image: url('/static/img/logo_color.svg')">
+            <div class="carousel-caption d-md-block text-start">
+              <div class="card-slide hero-content">
+                <h1 class="hero-title">Admin / Personal</h1>
+                <p class="hero-lead">Acceso a herramientas administrativas.</p>
+                {% if user and user.is_admin %}
+                  <a href="/admin" class="btn btn-gradient hero-cta">Ir a Admin</a>
+                {% else %}
+                  <a class="btn btn-white-outline" href="#" onclick="return false;">Acceso restringido</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#homeCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Siguiente</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-3">
+      <div class="card p-3">
+        <h6 class="mb-1">Ventas hoy</h6>
+        <div class="h4">{{ kpis.ventas_hoy|default('$0') }}</div>
+        <div class="small text-muted">Última venta: {{ kpis.ultima_venta|default('—') }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card p-3">
+        <h6 class="mb-1">Entradas vendidas</h6>
+        <div class="h4">{{ kpis.entradas_vendidas|default(0) }}</div>
+        <div class="small text-muted">Ocupación: {{ kpis.ocupacion|default('—') }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card p-3">
+        <h6 class="mb-1">Usuarios activos</h6>
+        <div class="h4">{{ kpis.usuarios_activos|default(1) }}</div>
+        <div class="small text-muted">Último acceso: {{ kpis.ultimo_acceso|default('—') }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card p-3">
+        <h6 class="mb-1">Alertas</h6>
+        <div class="small text-danger">{{ notifications|length if notifications is defined else 0 }} nuevas</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-6">
+      <div class="card p-3">
+        <h5>Próximas reservas</h5>
+        <ul class="list-unstyled mb-0">
+          {% for r in reservas|default([]) %}
+            <li class="py-2 border-bottom">{{ r.hora }} — {{ r.sala }} — {{ r.cliente }}</li>
+          {% else %}
+            <li class="py-2 text-muted">No hay reservas próximas</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card p-3">
+        <h5>Ventas recientes</h5>
+        <ul class="list-unstyled mb-0">
+          {% for s in ventas_recientes|default([]) %}
+            <li class="py-2 border-bottom">{{ s.ref }} — {{ s.importe }} — {{ s.metodo }}</li>
+          {% else %}
+            <li class="py-2 text-muted">No hay ventas recientes</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-6">
+      <div class="card p-3">
+        <h5>Mini Cine</h5>
+        <p class="small">Accede a la gestión del Mini Cine.</p>
+        <a href="/cine" class="btn btn-sm btn-primary">Ir a Mini Cine</a>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card p-3">
+        <h5>Karaoke</h5>
+        <p class="small">Gestiona sesiones y reservas de Karaoke.</p>
+        <a href="/karaoke" class="btn btn-sm btn-primary">Ir a Karaoke</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-6">
+      <div class="card p-3">
+        <h5>Heladería</h5>
+        <p class="small">Compra helados y snacks desde el panel de inicio.</p>
+        <a href="/heladeria" class="btn btn-sm btn-primary">Ir a Heladería</a>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

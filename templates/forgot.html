@@ -1,0 +1,33 @@
+{% extends 'auth_layout.html' %}
+{% set hide_sidebar = true %}
+{% block content %}
+  <div class="login-wrapper">
+    <div class="login-hero text-center mb-4">
+      <h1 class="mt-2">Recuperar contraseña</h1>
+      <p class="muted-lead">Introduce tu usuario para recibir un enlace de recuperación</p>
+    </div>
+
+    <div class="card login-card login-card-narrow mx-auto">
+      <div class="card-body">
+        {% if message %}
+          <div class="alert alert-info">{{ message|safe }}</div>
+        {% endif %}
+
+        <form method="POST" action="/forgot" autocomplete="on">
+          <div class="mb-3 input-group input-with-icon">
+            <span class="input-group-text bg-transparent border-0" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 2.5-9 5v1h18v-1c0-2.5-4-5-9-5z" fill="#000"/></svg>
+            </span>
+            <input name="username" class="form-control" placeholder="Usuario o correo" required />
+          </div>
+
+          <button type="submit" class="btn btn-gradient w-100 mb-2">Enviar enlace</button>
+        </form>
+
+        <div class="text-center mt-3 small">
+          <a href="/login">Volver a iniciar sesión</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

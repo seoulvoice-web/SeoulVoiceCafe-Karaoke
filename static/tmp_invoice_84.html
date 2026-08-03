@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Seoul Voice</title>
+    <!-- Usar versiones locales para generación de PDF (wkhtmltopdf puede bloquear recursos remotos) -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/fontawesome.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+  </head>
+  <body>
+    <div class="w-100 text-center p-2" style="background:#fff3cd;color:#856404;border-bottom:1px solid #ffeeba;">
+      <strong>URL base configurada:</strong> http://192.168.0.241:3000
+    </div>
+    <div class="d-flex" id="wrapper">
+      <div class="border-end bg-white" id="sidebar-wrapper">
+        <div class="sidebar-heading border-bottom bg-light d-flex align-items-center gap-2">
+          <img src="/static/img/logo.svg" alt="Seoul Voice" class="logo-img" />
+          <strong class="ms-1">Seoul Voice</strong>
+        </div>
+        <div class="list-group list-group-flush">
+          <a href="/" class="list-group-item list-group-item-action list-group-item-light p-3"><i class="fa-solid fa-house me-2"></i>Inicio</a>
+          <a href="/cine" class="list-group-item list-group-item-action list-group-item-light p-3"><i class="fa-solid fa-film me-2"></i>Mini Cine</a>
+          <a href="/karaoke" class="list-group-item list-group-item-action list-group-item-light p-3"><i class="fa-solid fa-microphone me-2"></i>Karaoke</a>
+
+          <div class="list-group-item list-group-item-light p-0">
+            <div class="d-flex align-items-center justify-content-between p-3">
+              <span class="text-decoration-none text-dark"><i class="fa-solid fa-boxes-stacked me-2"></i>Inventario / Gestión</span>
+              <button class="btn btn-sm btn-outline-secondary btn-collapse-toggle" data-collapse-target="#gestionarCollapse" aria-expanded="false" aria-controls="gestionarCollapse"><i class="fa-solid fa-angle-down"></i></button>
+            </div>
+          </div>
+          <div class="collapse ps-3" id="gestionarCollapse">
+            
+            <a href="/productos" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-box-open me-2"></i>Productos</a>
+            <a href="/contactos" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-address-book me-2"></i>Contactos</a>
+            <a href="/ubicacion" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-location-dot me-2"></i>Ubicación</a>
+            <a href="/galeria" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-images me-2"></i>Galería</a>
+            <a href="/reservas" class="list-group-item list-group-item-action list-group-item-light p-2" title="Reservas activas"><i class="fa-solid fa-calendar-check me-2"></i>Reservas / Citas <span class="badge bg-primary rounded-pill ms-2">2</span></a>
+            <a href="/salas" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-door-open me-2"></i>Salas</a>
+            <a href="/precios" class="list-group-item list-group-item-action list-group-item-light p-2"><i class="fa-solid fa-tag me-2"></i>Precios</a>
+            <a href="/eventos" class="list-group-item list-group-item-action list-group-item-light p-2" title="Próximos eventos"><i class="fa-solid fa-calendar-days me-2"></i>Eventos <span class="badge bg-success rounded-pill ms-2">Próx</span></a>
+            
+          </div>
+
+          <!-- submenu visible removed to avoid duplicate links; collapse contains items -->
+
+          <a href="/logout" class="list-group-item list-group-item-action list-group-item-light p-3">Cerrar sesión</a>
+        </div>
+      </div>
+      <div id="page-content-wrapper" class="w-100">
+        <nav class="navbar navbar-light bg-light border-bottom">
+          <div class="container-fluid d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+              <button class="btn btn-outline-secondary me-2" id="sidebarToggle" aria-label="Toggle sidebar">&#9776;</button>
+              
+              <span class="ms-3 small text-muted">URL base: http://localhost/login</span>
+            </div>
+            
+              <a class="btn btn-outline-primary" href="http://localhost/login" target="_blank" rel="noopener">Login</a>
+            
+          </div>
+        </nav>
+        <div class="container-fluid mt-3">
+          
+<style>
+  /* Print-friendly invoice styles */
+  .invoice-card { max-width: 900px; margin: 0 auto; }
+  @media print {
+    body * { visibility: hidden; }
+    .invoice-card, .invoice-card * { visibility: visible; }
+    .invoice-card { position: absolute; left: 0; top: 0; width: 100%; }
+    /* Ocultar controles de UI (enlaces y botones) en la versión impresa */
+    .no-print, a.btn.no-print, button.no-print, a.btn, button.btn { display: none !important; }
+  }
+  .invoice-header { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
+</style>
+
+<div class="invoice-card py-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="d-flex justify-content-between invoice-header">
+        <div>
+          <img src="/static/img/logo.svg" alt="Logo" style="height:56px;" />
+          <h5 class="mt-2">Seoul Voice</h5>
+          <div class="small text-muted">Av. Cochabamba- al frente de la inglesia jesus obrero - galeria - Piso 1 -- Tel: 63050841 - 72554129</div>
+        </div>
+        <div class="text-end">
+          <h4>Factura</h4>
+          <div><strong>Nº:</strong> F-000084</div>
+          <div><strong>Fecha emisión:</strong> 2026-02-01</div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-6">
+          <h6>Cliente</h6>
+          <p class="mb-0"><strong>DebugHTML</strong></p>
+          <p class="mb-0">ID: DBG</p>
+        </div>
+        <div class="col-6 text-end">
+          <h6>Detalle</h6>
+          <p class="mb-0">Sala: 1</p>
+          <p class="mb-0">Entrada: 13:06:56</p>
+          <p class="mb-0">Salida: </p>
+          <p class="mb-0">Promoción: ninguna</p>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Descripción</th>
+              <th class="text-center">Cant.</th>
+              <th class="text-end">Precio unit.</th>
+              <th class="text-end">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Boleto (entrada)</td>
+              <td class="text-center">1</td>
+              <td class="text-end">50.00 Bs</td>
+              <td class="text-end">50.00 Bs</td>
+            </tr>
+            
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="3" class="text-end">Subtotal</th>
+              <th class="text-end">50.00 Bs</th>
+            </tr>
+            
+            <tr>
+              <th colspan="3" class="text-end">Total a pagar</th>
+              <th class="text-end">50.00 Bs</th>
+            </tr>
+            
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-between mt-4">
+        <div class="small text-muted">
+          <p class="mb-1">Condiciones de pago: Pago al contado. Métodos: Efectivo, transferencia, Yape/Plin.</p>
+          <p class="mb-0">Contacto: ejemplo@correo.com — 63050841 - 72554129</p>
+        </div>
+        <div class="text-end">
+          <a class="btn btn-secondary no-print" href="/karaoke">Volver</a>
+          
+          <a class="btn btn-outline-primary no-print" href="/invoice/84/pdf">Descargar PDF</a>
+          
+          <button id="printBtn" type="button" class="btn btn-primary no-print" onclick="window.print()">Imprimir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  (function(){
+    var btn = document.getElementById('printBtn');
+    if (!btn) return;
+    var pdfAvailable = true;
+    var pdfUrl = "/invoice/84/pdf";
+    btn.addEventListener('click', function(e){
+      console.log('printBtn clicked, pdfAvailable=', pdfAvailable, 'pdfUrl=', pdfUrl);
+      e.preventDefault();
+      if (pdfAvailable && pdfUrl) {
+        // Descargar PDF si el servidor lo soporta
+        window.location.href = pdfUrl;
+      } else {
+        // Abrir diálogo de impresión del navegador
+        window.print();
+      }
+    });
+  })();
+</script>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/sidebar.js"></script>
+
+    <!-- Floating contact FAB -->
+    <div class="contact-fab-wrapper">
+      <button id="contactFab" class="contact-fab" aria-label="Contactar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div id="fabMenu" class="fab-menu" aria-hidden="true">
+        <a class="fab-item" href="https://wa.me/59170000000" target="_blank" rel="noopener" title="WhatsApp">
+          <img src="/static/img/whatsapp-icon.svg" alt="WhatsApp" />
+        </a>
+        <a class="fab-item" href="https://facebook.com/" target="_blank" rel="noopener" title="Facebook">
+          <img src="/static/img/facebook-icon.svg" alt="Facebook" />
+        </a>
+        <a class="fab-item" href="tel:+59163050841" title="Llamar">
+          <img src="/static/img/phone-icon.svg" alt="Teléfono" />
+        </a>
+        <a class="fab-item" href="mailto:ejemplo@correo.com" title="Correo">
+          <img src="/static/img/mail-icon.svg" alt="Correo" />
+        </a>
+      </div>
+      </div>
+      <script>
+        (function(){
+          var wrapper = document.querySelector('.contact-fab-wrapper');
+          if (!wrapper) return;
+          var btn = document.getElementById('contactFab');
+          var menu = document.getElementById('fabMenu');
+          try { if (document.body.classList.contains('pdf-render')) { wrapper.style.display = 'none'; return; } } catch(e){}
+          if (!wrapper.classList.contains('open')) wrapper.classList.add('closed');
+          function openMenu(){ wrapper.classList.remove('closed'); wrapper.classList.add('open'); wrapper.setAttribute('aria-expanded','true'); if(menu) menu.setAttribute('aria-hidden','false'); }
+          function closeMenu(){ wrapper.classList.remove('open'); wrapper.classList.add('closed'); wrapper.setAttribute('aria-expanded','false'); if(menu) menu.setAttribute('aria-hidden','true'); }
+          btn.addEventListener('click', function(e){ if (wrapper.classList.contains('open')) closeMenu(); else openMenu(); });
+          document.addEventListener('click', function(e){ if (!wrapper.contains(e.target)) closeMenu(); }, true);
+          document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeMenu(); });
+        })();
+      </script>
+  </body>
+</html>

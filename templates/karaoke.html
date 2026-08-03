@@ -1,0 +1,128 @@
+{% extends 'layout.html' %}
+{% block content %}
+	<div class="container py-5">
+		<div class="row justify-content-center">
+			<div class="col-12 col-md-6">
+				<div class="card">
+					<div class="card-body">
+						<h3 class="mb-3 text-center">Compra de boletos — Karaoke</h3>
+						<form id="ticketForm" action="/karaoke" method="post">
+							<div class="mb-3">
+								<label class="form-label">Nombre</label>
+								<input name="buyer_name" class="form-control" required maxlength="200" />
+							</div>
+							<div class="mb-3">
+								<label class="form-label">ID (CI / Pasaporte)</label>
+								<input name="buyer_id" class="form-control" required maxlength="100" />
+							</div>
+							<div class="mb-3">
+								<label class="form-label">Celular</label>
+								<input name="buyer_phone" class="form-control" maxlength="50" placeholder="(opcional)" />
+							</div>
+							<div class="mb-3">
+								<label class="form-label">Precio base (Bs)</label>
+								<input name="price" type="number" step="0.01" min="0" class="form-control" value="{{ '%.2f'|format(default_price|float) }}" />
+								<div class="form-text">Puedes ajustar el precio antes de comprar. Los snacks se sumarán automáticamente.</div>
+							</div>
+								<div class="mb-3">
+									<label class="form-label">Hora de salida (solo hora)</label>
+									<input name="exit_time_time" type="time" class="form-control" required />
+									<input type="hidden" name="exit_time" id="exit_time_hidden" />
+									<small class="text-muted">La fecha será la de hoy y la hora la introduces tú; la hora de entrada se registra automáticamente.</small>
+									</div>
+							<div class="mb-3">
+								<label class="form-label">Sala</label>
+								<select name="room_number" class="form-select" required>
+									<option value="">Elige...</option>
+									<option value="1">Sala 1</option>
+									<option value="2">Sala 2</option>
+								</select>
+							</div>
+							<div class="mb-3">
+								<label class="form-label">Promoción</label>
+								<select name="promo_type" class="form-select">
+									<option value="ninguna">Ninguna</option>
+									<option value="2x1">2 por 1</option>
+									<option value="estudiante">Estudiante</option>
+								</select>
+							</div>
+							<div class="mb-3">
+								<label class="form-label">Snacks (elige los que quieras y la cantidad)</label>
+								<div class="list-group">
+									{% for p in products %}
+										<div class="list-group-item d-flex align-items-center">
+											<div class="form-check me-3">
+												<input class="form-check-input snack-checkbox" type="checkbox" value="{{ p.id }}" id="snack_{{ p.id }}" data-name="{{ p.name }}" data-price="{{ '%.2f'|format(p.price) }}">
+											</div>
+											<label class="me-3" for="snack_{{ p.id }}">{{ p.name }}</label>
+											<div class="me-3 text-muted">Bs {{ '%.2f'|format(p.price) }}</div>
+											<div>
+												<input type="number" min="1" value="1" class="form-control form-control-sm snack-qty" data-id="{{ p.id }}" style="width:90px;" />
+											</div>
+										</div>
+									{% else %}
+										<div class="small text-muted">No hay snacks configurados.</div>
+									{% endfor %}
+								</div>
+								<input type="hidden" name="snacks_list" id="snacks_list_hidden" />
+							</div>
+							<button class="btn btn-primary w-100" type="submit">Comprar boleto</button>
+							<div class="mt-2 d-grid">
+								<button id="yapeBtn" type="button" class="btn btn-outline-success">Pagar con Yape (QR)</button>
+							</div>
+						</form>
+
+						<!-- Modal: Yape QR -->
+						<div class="modal fade" id="yapeModal" tabindex="-1" aria-hidden="true">
+						  <div class="modal-dialog modal-dialog-centered">
+						    <div class="modal-content">
+						      <div class="modal-header">
+						        <h5 class="modal-title">Pagar con Yape</h5>
+						        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+						      </div>
+						      <div class="modal-body text-center">
+						        <p>Introduce el monto a pagar y genera el QR para escanear con Yape.</p>
+						        <div class="mb-3">
+						          <input id="yapeAmount" type="number" step="0.01" min="0" class="form-control" value="35.00">
+						        </div>
+																<div id="yapeQrWrap">
+																	<img id="yapeQr" src="" alt="QR Yape" style="max-width:100%;height:auto;display:none" />
+																	<!-- Imagen persistente para evitar que desaparezca accidentalmente -->
+																	<img id="yapeQrPersistent" src="" alt="QR Yape Persistente" style="max-width:100%;height:auto;display:none;border:1px solid #eee;padding:4px;background:#fff;" />
+																	<div id="yapeControls" class="mt-2" style="display:none">
+																		<button id="checkYape" type="button" class="btn btn-sm btn-primary">Verificar pago</button>
+																		{% if user and user.is_admin %}
+																		<button id="markPaidBtn" type="button" class="btn btn-sm btn-success ms-2">Marcar como pagado</button>
+																		{% endif %}
+																		<a id="yapeInvoiceLink" href="#" target="_blank" class="ms-2 small" style="display:none">Ver factura</a>
+																	</div>
+																	<div id="yapeStatus" class="small text-muted mt-2" style="min-height:1.2em"></div>
+																	{% if not (user and user.is_admin) %}
+																	<div id="yapeHint" class="small text-info mt-1">Si ya pagaste, pide a un administrador que confirme el pago o pulsa "Verificar pago" para comprobar el estado.</div>
+																	{% endif %}
+																</div>
+						      </div>
+						      <div class="modal-footer">
+						        <button id="genYapeQr" type="button" class="btn btn-success">Generar QR</button>
+						        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+						      </div>
+						    </div>
+						  </div>
+						</div>
+						{% with messages = get_flashed_messages() %}
+							{% if messages %}
+								<div class="mt-3">
+									{% for m in messages %}
+										<div class="alert alert-info small">{{ m }}</div>
+									{% endfor %}
+								</div>
+							{% endif %}
+						{% endwith %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="/static/js/karaoke.js"></script>
+{% endblock %}
+

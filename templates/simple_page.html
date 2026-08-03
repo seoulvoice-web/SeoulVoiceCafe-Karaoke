@@ -1,0 +1,681 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <h2 class="mb-3">{{ heading }}</h2>
+        {% if message %}
+          <div class="alert alert-info">{{ message }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Productos: tabla con columnas profesionales #}
+    {% if title == 'Productos' %}
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="mb-3">
+            <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#createProductCollapse" aria-expanded="false">Nuevo producto</button>
+            <div class="collapse mt-3" id="createProductCollapse">
+              <form action="{{ url_for('create_product') }}" method="post" enctype="multipart/form-data" class="row g-2">
+                <div class="col-12 col-md-6">
+                  <label class="form-label">Nombre</label>
+                  <input name="name" class="form-control" required />
+                </div>
+                <div class="col-6 col-md-3">
+                  <label class="form-label">SKU (opcional)</label>
+                  <input name="sku" class="form-control" />
+                </div>
+                <div class="col-6 col-md-3">
+                  <label class="form-label">Stock</label>
+                  <input name="stock" type="number" min="0" value="0" class="form-control" />
+                </div>
+                <div class="col-6 col-md-3">
+                  <label class="form-label">Precio (Bs)</label>
+                  <input name="price_bs" type="number" step="0.01" min="0" value="0" class="form-control" />
+                </div>
+                <div class="col-6 col-md-3">
+                  <label class="form-label">Imagen</label>
+                  <input name="image" type="file" accept="image/*" class="form-control" />
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Descripción</label>
+                  <input name="description" class="form-control" />
+                </div>
+                <div class="col-12 text-end mt-2">
+                  <button class="btn btn-success" type="submit">Crear producto</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Nombre</th>
+                  <th>SKU</th>
+                  <th>Stock</th>
+                  <th>Precio</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for p in items %}
+                  {% if p is mapping %}
+                    <tr data-product-id="{{ p.id }}">
+                      <td class="align-middle">
+                        <img src="{{ p.image }}" alt="{{ p.name }}" style="width:10mm;height:10mm;object-fit:cover;border:1px solid #ddd;padding:2px;background:#fff" />
+                        <div class="d-inline-block ms-2 align-middle">
+                          <div class="fw-bold">{{ p.name }}</div>
+                          {% if p.description %}<div class="small text-muted">{{ p.description }}</div>{% endif %}
+                        </div>
+                      </td>
+                      <td class="align-middle">{{ p.sku }}</td>
+                      <td class="text-end align-middle">{{ p.stock }}</td>
+                      <td class="text-end align-middle">{{ (p.price_bs|float)|round(2) }} Bs</td>
+                      <td class="align-middle">
+                        <button class="btn btn-sm btn-outline-primary" type="button">Ver</button>
+                        <button class="btn btn-sm btn-outline-secondary btn-edit-product" type="button">Editar</button>
+                        <button class="btn btn-sm btn-primary btn-save-product d-none" type="button">Guardar</button>
+                        <button class="btn btn-sm btn-secondary btn-cancel-product d-none" type="button">Cancelar</button>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td>{{ p }}</td>
+                      <td>SV-{{ '%04d' % loop.index }}</td>
+                      <td>{{ (10 + loop.index) }}</td>
+                      <td>{{ ('$' ~ (20 + loop.index * 5)) }}</td>
+                      <td>
+                        <button class="btn btn-sm btn-outline-primary" type="button">Ver</button>
+                      </td>
+                    </tr>
+                  {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    {% elif title == 'Contactos' %}
+      <div class="row g-3">
+        {% for c in items %}
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title">{{ c.split(':')[0] }}</h5>
+                <p class="card-text">{{ c.split(':',1)[1] }}</p>
+                <a href="#" class="btn btn-sm btn-primary">Contactar</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+    {% elif title == 'Ubicación' %}
+      <div class="row">
+        <div class="col-12 col-md-8">
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5>Dirección</h5>
+              <p>{{ message or 'Av. Cochabamba- al frente de la inglesia jesus obrero - galeria - Piso 1' }}</p>
+              <div class="ratio ratio-16x9">
+                <!-- Mapa embebido de Google Maps para la ubicación solicitada -->
+                <iframe src="https://maps.google.com/maps?q=-16.53296,-68.2011671&z=17&output=embed" style="border:0" allowfullscreen loading="lazy"></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-4">
+          <div class="card mb-3">
+            <div class="card-body">
+              <h6>Horario</h6>
+              <p>Lun-Vie: 09:00 - 22:00<br>Sab - Dom: 10:00 - 22:00</p>
+              <a href="https://maps.google.com/maps?q=-16.53296%2C-68.2011671&z=17&hl=es" target="_blank" class="btn btn-sm btn-gradient">Ver en Maps</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    {% elif title == 'Galería' %}
+      <div class="row row-cols-2 row-cols-md-3 g-3 gallery-grid">
+        {% for img in items %}
+          <div class="col">
+            <div class="card vintage-img h-100">
+              <a href="#" class="gallery-thumb" data-index="{{ loop.index0 }}" data-src="{{ img }}" data-poster="{{ img|replace('.mp4', '.svg') }}" aria-label="Abrir media {{ loop.index }}">
+                {% if img.lower().endswith('.mp4') %}
+                  <video poster="{{ img|replace('.mp4', '.svg') }}" class="card-img-top img-fluid" muted playsinline preload="metadata" style="height:160px;object-fit:cover;">
+                    <source src="{{ img }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                  </video>
+                {% else %}
+                  <img src="{{ img }}" class="card-img-top img-fluid" alt="Imagen {{ loop.index }}">
+                {% endif %}
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Lightbox modal (Bootstrap) -->
+      <div class="modal fade" id="galleryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content bg-transparent border-0">
+            <div class="modal-body text-center p-0 position-relative">
+              <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-2" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+              <button id="galleryPrev" class="btn btn-sm btn-dark position-absolute start-0 top-50 translate-middle-y ms-2" aria-label="Anterior">‹</button>
+              <div id="galleryModalMedia" class="d-flex justify-content-center align-items-center" style="max-height:80vh;"></div>
+              <button id="galleryNext" class="btn btn-sm btn-dark position-absolute end-0 top-50 translate-middle-y me-2" aria-label="Siguiente">›</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    {% elif title == 'Reservas' %}
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="mb-0">Reservas y Citas</h5>
+              {% if summary %}
+                <div class="small text-muted">Total: {{ summary.total }} — Confirmadas: {{ summary.confirmed }} — Pendientes: {{ summary.pending }}</div>
+              {% endif %}
+            </div>
+            <div>
+              <button id="newReservationBtn" class="btn btn-sm btn-primary">Nueva reserva</button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light"><tr><th>Cliente</th><th>Servicio</th><th>Fecha / Hora</th><th>Sala</th><th>Duración</th><th>Contacto</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody>
+                {% for r in items %}
+                  {% if r is mapping %}
+                    <tr data-reservation-id="{{ r.id }}">
+                      <td>
+                        <div class="fw-bold">{{ r.customer }}</div>
+                        {% if r.email %}<div class="small text-muted">{{ r.email }}</div>{% endif %}
+                      </td>
+                      <td>{{ r.service }}</td>
+                      <td>{{ r.date.replace('T',' ') }}</td>
+                      <td>{{ r.room }}</td>
+                      <td>{{ (r.duration_minutes // 60) }}h {{ (r.duration_minutes % 60) }}m</td>
+                      <td>{{ r.contact }}</td>
+                      <td>
+                        {% if r.status == 'confirmed' %}
+                          <span class="badge bg-success">Confirmada</span>
+                        {% elif r.status == 'cancelled' %}
+                          <span class="badge bg-secondary">Cancelada</span>
+                        {% else %}
+                          <span class="badge bg-warning">Pendiente</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <div class="btn-group" role="group">
+                          <a href="#" class="btn btn-sm btn-outline-primary view-reservation">Ver</a>
+                          <a href="#" class="btn btn-sm btn-outline-secondary edit-reservation">Editar</a>
+                          <a href="#" class="btn btn-sm btn-outline-success confirm-reservation">Confirmar</a>
+                          <a href="#" class="btn btn-sm btn-outline-danger cancel-reservation">Cancelar</a>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="table-secondary small"><td colspan="8">Notas: {{ r.notes }}</td></tr>
+                  {% else %}
+                    <tr><td colspan="8">{{ r }}</td></tr>
+                  {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    {% elif title == 'Salas' %}
+      <div class="row g-3">
+        {% for s in items %}
+          <div class="col-12 col-md-4">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title">{{ s }}</h5>
+                <p>Capacidad: {{ 4 + loop.index * 4 }} personas</p>
+                <p>Equipamiento: Micrófono, Monitor, Iluminación</p>
+                <a href="#" class="btn btn-sm btn-primary">Reservar</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+    {% elif title == 'Precios' %}
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <div class="card">
+            <div class="card-body">
+              <h5>Sala Estándar</h5>
+              <p class="lead">20 USD / hora</p>
+              <ul>
+                <li>Equipo básico</li>
+                <li>Soporte técnico disponible</li>
+              </ul>
+              <a class="btn btn-gradient" href="#">Contratar</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="card">
+            <div class="card-body">
+              <h5>Sala VIP</h5>
+              <p class="lead">50 USD / hora</p>
+              <ul>
+                <li>Equipo premium</li>
+                <li>Atención prioritaria</li>
+              </ul>
+              <a class="btn btn-gradient" href="#">Contratar</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Modal: Crear/Editar Reserva -->
+      <div class="modal fade" id="reservationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Nueva reserva</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+              <form id="reservationForm">
+                <div class="mb-2"><label class="form-label">Cliente</label><input name="customer" class="form-control" required></div>
+                <div class="mb-2"><label class="form-label">Contacto</label><input name="contact" class="form-control"></div>
+                <div class="mb-2"><label class="form-label">Email</label><input name="email" type="email" class="form-control"></div>
+                <div class="mb-2"><label class="form-label">Servicio</label><input name="service" class="form-control" value="Reserva"></div>
+                <div class="mb-2"><label class="form-label">Fecha / Hora</label><input name="date" type="datetime-local" class="form-control" required></div>
+                <div class="mb-2"><label class="form-label">Sala</label><input name="room" class="form-control" placeholder="Sala A"></div>
+                <div class="mb-2"><label class="form-label">Duración (min)</label><input name="duration_minutes" type="number" class="form-control" value="60"></div>
+                <div class="mb-2"><label class="form-label">Notas</label><textarea name="notes" class="form-control"></textarea></div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button id="saveReservationBtn" type="button" class="btn btn-success">Crear</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    {% elif title == 'Eventos' %}
+      <div class="list-group">
+        {% for e in items %}
+          <div class="list-group-item d-flex justify-content-between align-items-start">
+            <div>
+              <div class="fw-bold">{{ e }}</div>
+              <div class="small text-muted">Detalles y entradas disponibles</div>
+            </div>
+            <div><a class="btn btn-sm btn-outline-success" href="#">Entradas</a></div>
+          </div>
+        {% endfor %}
+      </div>
+
+    {% elif title == 'Asistencia' %}
+      <div class="card">
+        <div class="card-body">
+          <h5>Resumen de asistencia</h5>
+          <ul>
+            {% for a in items %}
+              <li>{{ a }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+    {% elif title == 'Admin' %}
+      <div class="row g-3">
+        <div class="col-12 col-md-4">
+          <div class="card p-3 text-center">
+            <h6>Usuarios</h6>
+            <div class="h2">{{ total_users if total_users is not none else '—' }}</div>
+            <div class="mt-2">
+              <a class="btn btn-sm btn-primary" href="{{ url_for('admin_users') }}">Gestionar usuarios</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-4">
+          <div class="card p-3 text-center">
+            <h6>Tickets (salas seleccionadas)</h6>
+            <div class="h2">{{ total_tickets_rooms if total_tickets_rooms is defined else '—' }}</div>
+            <div class="small text-muted">Salas mostradas: {% if room_breakdown %}{{ room_breakdown|map(attribute='room')|join(', ') }}{% else %}1, 2{% endif %}</div>
+          </div>
+        </div>
+        <div class="col-12 col-md-4">
+          <div class="card p-3 text-center">
+            <h6>Ingresos (mes)</h6>
+            <div class="h2">{{ monthly_income_bs if monthly_income_bs is not none else '—' }} Bs</div>
+            <div class="mt-2">
+              <a class="btn btn-sm btn-outline-success" href="{{ url_for('staff_new') }}">Agregar personal</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="col-12 col-lg-6">
+          <div class="card">
+            <div class="card-body">
+              <h6>Desglose por día (mes actual)</h6>
+              {% if daily_breakdown %}
+                <div class="small text-muted mb-2">Días con ventas</div>
+                <ul class="list-unstyled">
+                  {% for d in daily_breakdown %}
+                    <li class="d-flex justify-content-between"><span>{{ d.date }}</span><strong>{{ d.income }} Bs</strong></li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <div class="text-muted">No hay datos diarios disponibles.</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-lg-6">
+          <div class="card">
+            <div class="card-body">
+              <h6>Desglose por sala</h6>
+              {% if room_breakdown %}
+                <div class="table-responsive">
+                  <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light"><tr><th>Sala</th><th class="text-end">Tickets</th><th class="text-end">Ingresos (Bs)</th></tr></thead>
+                    <tbody>
+                      {% for r in room_breakdown %}
+                        <tr><td>Sala {{ r.room }}</td><td class="text-end">{{ r.tickets }}</td><td class="text-end">{{ r.income }}</td></tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+                <div class="mt-2 small text-muted">Totales: <strong>{{ total_tickets_rooms }}</strong> tickets — <strong>{{ total_revenue_rooms }} Bs</strong></div>
+              {% else %}
+                <div class="text-muted">No hay datos por sala disponibles.</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    {% elif show_form %}
+      <div class="card">
+        <div class="card-body">
+          <form method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-3">
+              <label class="form-label">Nombre</label>
+              <input class="form-control" name="name" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email (opcional)</label>
+              <input class="form-control" name="email" type="email" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Contraseña (dejar vacío para generar)</label>
+              <input class="form-control" name="password" type="text" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Rol</label>
+              <select name="role" class="form-select">
+                <option>Staff</option>
+                <option>Personal Nuevo</option>
+                <option>Admin</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" type="submit">Guardar</button>
+          </form>
+        </div>
+      </div>
+
+    {% else %}
+      <div class="card">
+        <div class="card-body">
+          {% if items %}
+            <ul>
+            {% for it in items %}
+              <li>{{ it }}</li>
+            {% endfor %}
+            </ul>
+          {% else %}
+            <p>Contenido temporal. En producción esta sección mostrará información detallada.</p>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+    {% if title == 'Reservas' %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      // Delegated handler for view/edit/confirm/cancel buttons
+      var tbody = document.querySelector('table tbody');
+      if (!tbody) return;
+      tbody.addEventListener('click', function(ev){
+        var btn = ev.target.closest('a');
+        if (!btn) return;
+        ev.preventDefault();
+        var tr = btn.closest('tr[data-reservation-id]');
+        if (!tr) return;
+        var rid = tr.dataset.reservationId;
+        // View
+        if (btn.classList.contains('view-reservation')){
+          try {
+            var notesRow = tr.nextElementSibling && tr.nextElementSibling.classList.contains('table-secondary') ? tr.nextElementSibling : null;
+            var details = '';
+            var cells = tr.querySelectorAll('td');
+            details += '<strong>Cliente:</strong> ' + (cells[0] ? cells[0].innerText.trim() : '') + '<br/>';
+            details += '<strong>Servicio:</strong> ' + (cells[1] ? cells[1].innerText.trim() : '') + '<br/>';
+            details += '<strong>Fecha / Hora:</strong> ' + (cells[2] ? cells[2].innerText.trim() : '') + '<br/>';
+            details += '<strong>Sala:</strong> ' + (cells[3] ? cells[3].innerText.trim() : '') + '<br/>';
+            details += '<strong>Contacto:</strong> ' + (cells[5] ? cells[5].innerText.trim() : '') + '<br/>';
+            if (notesRow) details += '<strong>Notas:</strong> ' + notesRow.innerText.trim();
+            var md = document.createElement('div'); md.className = 'modal fade'; md.tabIndex = -1; md.innerHTML = '<div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Reserva ' + rid + '</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">' + details + '</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button></div></div></div>';
+            document.body.appendChild(md);
+            var bsm = new bootstrap.Modal(md);
+            bsm.show();
+            md.addEventListener('hidden.bs.modal', function(){ md.remove(); });
+          } catch(e){ console.error(e); alert('Error mostrando reserva'); }
+          return;
+        }
+        // Edit
+        if (btn.classList.contains('edit-reservation')){
+          try {
+            var resModalEl = document.getElementById('reservationModal');
+            var resForm = document.getElementById('reservationForm');
+            if (!resModalEl || !resForm) return;
+            // Prefill form from table
+            var cells = tr.querySelectorAll('td');
+            resForm.elements['customer'].value = (cells[0] ? cells[0].innerText.trim().split('\n')[0] : '');
+            var emailEl = cells[0] && cells[0].querySelector('.small.text-muted');
+            resForm.elements['email'].value = emailEl ? emailEl.innerText.trim() : '';
+            resForm.elements['service'].value = (cells[1] ? cells[1].innerText.trim() : 'Reserva');
+            // date input expects 'YYYY-MM-DDTHH:MM'
+            var dateText = (cells[2] ? cells[2].innerText.trim() : '');
+            var iso = dateText.replace(' ','T');
+            resForm.elements['date'].value = iso;
+            resForm.elements['room'].value = (cells[3] ? cells[3].innerText.trim() : '');
+            var dur = tr.querySelector('td:nth-child(5)').innerText.trim() || '60';
+            // parse '1h 30m' format
+            var mins = 60;
+            var m = dur.match(/(\d+)h\s*(\d+)m/);
+            if (m) mins = parseInt(m[1])*60 + parseInt(m[2]);
+            resForm.elements['duration_minutes'].value = mins;
+            var notesRow = tr.nextElementSibling && tr.nextElementSibling.classList.contains('table-secondary') ? tr.nextElementSibling : null;
+            resForm.elements['notes'].value = notesRow ? notesRow.innerText.replace('Notas:','').trim() : '';
+            resForm.dataset.editId = rid;
+            var resModal = new bootstrap.Modal(resModalEl);
+            resModal.show();
+          } catch(e){ console.error(e); alert('Error preparando edición'); }
+          return;
+        }
+        // Confirm
+        if (btn.classList.contains('confirm-reservation')){
+          if (!confirm('Confirmar reserva ' + rid + ' ?')) return;
+          fetch('/api/reservations/confirm', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: rid }) })
+            .then(r=>r.json()).then(function(data){
+              if (data && data.ok) {
+                var badge = tr.querySelector('td:nth-child(7) span');
+                if (badge) { badge.className = 'badge bg-success'; badge.textContent = 'Confirmada'; }
+                window.showToast && window.showToast('Reserva confirmada', 'success');
+              } else { alert('Error: ' + (data && data.error ? data.error : 'unknown')); }
+            }).catch(function(e){ console.error(e); alert('Error confirmando reserva'); });
+          return;
+        }
+        // Cancel
+        if (btn.classList.contains('cancel-reservation')){
+          if (!confirm('Cancelar reserva ' + rid + ' ?')) return;
+          fetch('/api/reservations/cancel', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: rid }) })
+            .then(r=>r.json()).then(function(data){
+              if (data && data.ok) {
+                var badge = tr.querySelector('td:nth-child(7) span');
+                if (badge) { badge.className = 'badge bg-secondary'; badge.textContent = 'Cancelada'; }
+                window.showToast && window.showToast('Reserva cancelada', 'info');
+              } else { alert('Error: ' + (data && data.error ? data.error : 'unknown')); }
+            }).catch(function(e){ console.error(e); alert('Error cancelando reserva'); });
+          return;
+        }
+      });
+    });
+    </script>
+    {% endif %}
+
+    {% if title == 'Reservas' %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      var newBtn = document.getElementById('newReservationBtn');
+      var resModalEl = document.getElementById('reservationModal');
+      var resForm = document.getElementById('reservationForm');
+      var saveBtn = document.getElementById('saveReservationBtn');
+      var resModal = resModalEl ? new bootstrap.Modal(resModalEl) : null;
+      if (newBtn && resModal) newBtn.addEventListener('click', function(){ resForm.reset(); resModal.show(); });
+      if (saveBtn) saveBtn.addEventListener('click', function(){
+        try {
+          var fd = {};
+          Array.from(resForm.elements).forEach(function(el){ if (el.name) fd[el.name]=el.value; });
+          fetch('/api/reservations/create', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(fd) })
+            .then(r=>r.json()).then(function(data){
+              if (data && data.ok && data.reservation) {
+                // prepend row to table
+                var tbody = document.querySelector('table tbody');
+                if (tbody) {
+                  var r = data.reservation;
+                  var tr = document.createElement('tr'); tr.setAttribute('data-reservation-id', r.id);
+                  tr.innerHTML = '<td><div class="fw-bold">'+(r.customer||'')+'</div>' + (r.email?'<div class="small text-muted">'+r.email+'</div>':'') + '</td>' +
+                                 '<td>'+ (r.service||'') +'</td>' +
+                                 '<td>'+ (r.date||'') +'</td>' +
+                                 '<td>'+ (r.room||'') +'</td>' +
+                                 '<td>'+ (Math.floor((r.duration_minutes||0)/60)) +'h '+ ((r.duration_minutes||0)%60) +'m</td>' +
+                                 '<td>'+ (r.contact||'') +'</td>' +
+                                 '<td><span class="badge bg-warning">Pendiente</span></td>' +
+                                 '<td><div class="btn-group" role="group"><a href="#" class="btn btn-sm btn-outline-primary view-reservation">Ver</a><a href="#" class="btn btn-sm btn-outline-success confirm-reservation">Confirmar</a><a href="#" class="btn btn-sm btn-outline-danger cancel-reservation">Cancelar</a></div></td>';
+                  tbody.insertBefore(tr, tbody.firstChild);
+                }
+                if (resModal) resModal.hide();
+                window.showToast && window.showToast('Reserva creada', 'success');
+              } else {
+                alert('Error: ' + (data && data.error ? data.error : 'unknown'));
+              }
+            }).catch(function(e){ console.error(e); alert('Error creando reserva'); });
+        } catch(e){ console.error(e); alert('Error creando reserva'); }
+      });
+    });
+    </script>
+    {% endif %}
+
+    {% if title == 'Productos' %}
+      <script src="/static/js/products.js"></script>
+    {% endif %}
+
+    {% if title == 'Productos' %}
+      <!-- Modal para ver producto -->
+      <div class="modal fade" id="productViewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="productViewTitle">Producto</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body text-center">
+              <img id="productViewImage" src="" alt="" style="width:30mm;height:30mm;object-fit:cover;border:1px solid #ddd;padding:4px;background:#fff;margin-bottom:8px" />
+              <div id="productViewName" class="fw-bold"></div>
+              <div id="productViewDesc" class="small text-muted mb-2"></div>
+              <div id="productViewPrice" class="h5"></div>
+              <div id="productViewStock" class="small text-muted"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+
+  {# Gallery scripts: only load when viewing Galería #}
+  {% if title == 'Galería' %}
+    <script>
+      document.addEventListener('DOMContentLoaded', function(){
+        var thumbs = Array.from(document.querySelectorAll('.gallery-thumb'));
+        if (!thumbs.length) return;
+        var modalEl = document.getElementById('galleryModal');
+        var mediaContainer = document.getElementById('galleryModalMedia');
+        var idx = 0;
+        var bsModal = modalEl ? new bootstrap.Modal(modalEl) : null;
+
+        function showIndex(i){
+          if (!thumbs[i]) return;
+          var src = thumbs[i].dataset.src;
+          idx = i;
+          // clear existing
+          mediaContainer.innerHTML = '';
+          if (!src) return;
+          var lower = src.toLowerCase();
+          if (lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.ogg')){
+            var v = document.createElement('video');
+            v.src = src;
+            var poster = thumbs[i].dataset.poster || '';
+            if (poster) v.poster = poster;
+            v.controls = true;
+            v.autoplay = true;
+            v.playsInline = true;
+            v.style.maxWidth = '100%';
+            v.style.maxHeight = '80vh';
+            v.setAttribute('controlsList','nodownload');
+            mediaContainer.appendChild(v);
+            try { v.currentTime = 0; v.play(); } catch(e){}
+          } else {
+            var im = document.createElement('img');
+            im.src = src;
+            im.className = 'img-fluid';
+            im.alt = '';
+            im.style.maxHeight = '80vh';
+            im.style.maxWidth = '100%';
+            mediaContainer.appendChild(im);
+          }
+        }
+
+        thumbs.forEach(function(t, i){
+          t.addEventListener('click', function(ev){ ev.preventDefault(); showIndex(i); if (bsModal) bsModal.show(); });
+        });
+
+        var nextBtn = document.getElementById('galleryNext');
+        var prevBtn = document.getElementById('galleryPrev');
+        if (nextBtn) nextBtn.addEventListener('click', function(ev){ ev.preventDefault(); showIndex((idx+1) % thumbs.length); });
+        if (prevBtn) prevBtn.addEventListener('click', function(ev){ ev.preventDefault(); showIndex((idx-1+thumbs.length) % thumbs.length); });
+
+        // keyboard navigation
+        document.addEventListener('keydown', function(e){
+          // only navigate when modal is open
+          if (!modalEl || !modalEl.classList.contains('show')) return;
+          if (e.key === 'ArrowRight') { showIndex((idx+1) % thumbs.length); }
+          if (e.key === 'ArrowLeft') { showIndex((idx-1+thumbs.length) % thumbs.length); }
+          if (e.key === 'Escape') { if (bsModal) bsModal.hide(); }
+        });
+      });
+    </script>
+  {% endif %}
+
+{% endblock %}

@@ -1,0 +1,86 @@
+/* Google fonts to match vintage theme */
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Montserrat:wght@300;400;600&display=swap');
+
+body { font-family: 'Montserrat', Arial, sans-serif; background: linear-gradient(180deg, #F7F1E1 0%, #ECE2C8 60%); color: #2b2b2b; }
+#wrapper { min-height: 100vh; }
+#sidebar-wrapper { width: 220px; }
+#page-content-wrapper { padding: 20px; }
+#lyrics p { margin: 8px 0; padding: 6px; }
+#lyrics p.active { background: rgba(167,123,71,0.09); font-weight: 700; }
+
+/* Headings */
+h1,h2,h3 { font-family: 'Libre Baskerville', serif; color: #8B5E3C; }
+
+/* Sidebar look */
+.sidebar-heading strong { font-family: 'Libre Baskerville', serif; color: #8B5E3C; }
+.list-group-item { background: transparent; border: none; color: rgba(43,43,43,0.9); padding-left: 1.05rem; border-left: 4px solid transparent; transition: all 160ms ease; }
+.list-group-item:hover, .list-group-item.active { background: rgba(139,94,60,0.04); border-left-color: #8B5E3C; color: #8B5E3C; }
+
+/* Vintage images */
+.vintage-img { filter: sepia(0.18) contrast(1.04) saturate(0.92); border-radius: 8px; box-shadow: 0 8px 20px rgba(43,43,43,0.06); }
+
+/* Buttons */
+.btn-white-outline { background: #fff; border: 1px solid rgba(139,94,60,0.08); color: #8B5E3C; padding: 10px 12px; border-radius: 10px; }
+.btn-facebook { background: linear-gradient(90deg,#6B8AA4 0%, #58798b 100%); color: #fff; border-radius: 10px; }
+
+/* Logo image styling */
+.logo-img {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	object-fit: cover;
+	display: inline-block;
+}
+
+/* Responsive behavior for sidebar */
+@media (max-width: 768px) {
+	/* Sidebar slides in/out using transform for smooth animation */
+	#sidebar-wrapper {
+		position: fixed;
+		left: 0;
+		top: 0;
+		height: 100%;
+		z-index: 1040;
+		background: #fff;
+		width: 220px;
+		box-shadow: 2px 0 12px rgba(0,0,0,0.12);
+		transform: translateX(-100%);
+		transition: transform 320ms cubic-bezier(.2,.9,.2,1);
+		will-change: transform;
+	}
+	/* When active, slide into view */
+	#wrapper.show-sidebar #sidebar-wrapper { transform: translateX(0); }
+
+	#page-content-wrapper { padding: 12px; }
+	.logo-img { width: 40px; height: 40px; }
+}
+
+@media (min-width: 769px) {
+	/* Sidebar overlays content on desktop instead of pushing it */
+	#sidebar-wrapper { display: block; position: fixed; left: 0; top: 0; height: 100%; z-index: 1050; }
+	/* Ensure page content does not get a left margin when sidebar is shown */
+	#page-content-wrapper { margin-left: 0 !important; width: 100% !important; }
+}
+
+/* Overlay for mobile sidebar with fade animation */
+#sidebarOverlay {
+	visibility: hidden;
+	opacity: 0;
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,0.45);
+	z-index: 1030;
+	transition: opacity 220ms ease, visibility 220ms ease, backdrop-filter 220ms ease;
+	backdrop-filter: blur(0px);
+}
+
+/* overlay is appended to body after #wrapper; use sibling selector so it becomes visible when sidebar is shown */
+#wrapper.show-sidebar ~ #sidebarOverlay {
+	visibility: visible;
+	opacity: 0.5;
+	backdrop-filter: blur(4px);
+}
+
+/* Keep parity with app styles: small adjustments for mobile-safe FAB (if present) */
+.contact-fab-wrapper { padding-bottom: env(safe-area-inset-bottom); }
+.contact-fab-wrapper.invoice-left { left: 12px; right: auto; }

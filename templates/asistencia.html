@@ -1,0 +1,216 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="row">
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Panel rápido</h5>
+        <p id="asistencia-status" data-open-checkin="{{ open_record.check_in.isoformat() if open_record and open_record.check_in else '' }}">
+          {% if open_record %}
+            Tienes entrada registrada a las {{ (open_record.check_in.astimezone().strftime('%H:%M')) if open_record.check_in else '' }} (sin salida todavía).
+          {% else %}
+            No tienes entrada para hoy.
+          {% endif %}
+        </p>
+        <div class="d-grid gap-2">
+            <form id="form-checkin" action="/asistencia/checkin" method="post" style="margin:0;">
+            <button id="btn-checkin" type="button" class="btn btn-success">Marcar entrada</button>
+          </form>
+          <form id="form-checkout" action="/asistencia/checkout" method="post" style="margin:0;">
+            <button id="btn-checkout" type="button" class="btn btn-warning">Marcar salida</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h6>Exportar</h6>
+        <form id="exportForm" class="d-flex gap-2">
+          <input type="date" name="from" class="form-control form-control-sm">
+          <input type="date" name="to" class="form-control form-control-sm">
+          <button class="btn btn-sm btn-outline-primary">Exportar CSV</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Historial reciente</h5>
+        <div class="mb-2">
+          <small class="text-muted">Definiciones de turnos y estado</small>
+          <div class="mt-1">
+            <span class="badge bg-primary">Mañana</span> 08:00 - 17:00 — Entrada puntual hasta las 08:00; llegada posterior se marca como <strong>Retraso</strong>.<br>
+            <span class="badge bg-secondary">Tarde</span> 18:00 - 21:00 — Entrada puntual hasta las 18:00; llegada posterior se marca como <strong>Retraso</strong>.<br>
+            <span class="badge bg-info">Estado</span> <strong>Asistencia</strong> indica llegada a tiempo; <strong>Retraso</strong> indica llegada tardía respecto al inicio del turno.
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped" id="asistenciaTable">
+            <thead>
+              <tr><th>Usuario</th><th>Rol</th><th>Fecha</th><th>Entrada</th><th>Salida</th><th>Estado</th><th>Turno</th><th>Nota</th></tr>
+            </thead>
+            <tbody>
+              {% for r in recent %}
+                <tr data-id="{{ r.id }}" data-username="{{ r.username }}" data-role="{{ r.role or '' }}" data-date="{{ r.date }}" data-checkin="{{ r.check_in.isoformat() if r.check_in else '' }}" data-checkout="{{ r.check_out.isoformat() if r.check_out else '' }}" data-note="{{ r.note or '' }}" data-status="{{ r.status or '' }}">
+                  <td>{{ r.username }}</td>
+                  <td>{{ r.role or '' }}</td>
+                  <td>{{ r.date }}</td>
+                  <td class="td-checkin">{{ (r.check_in.astimezone().strftime('%H:%M')) if r.check_in else '' }}</td>
+                  <td class="td-checkout">{{ (r.check_out.astimezone().strftime('%H:%M')) if r.check_out else '' }}</td>
+                  <td class="td-status">{% if r.check_in %}{% if (r.check_in.astimezone().hour >= 8 and r.check_in.astimezone().hour < 17) %}{{ 'Asistencia' if r.check_in.astimezone().hour <= 8 else 'Retraso' }}{% else %}{% if (r.check_in.astimezone().hour >= 18 and r.check_in.astimezone().hour < 21) %}{{ 'Asistencia' if r.check_in.astimezone().hour <= 18 else 'Retraso' }}{% else %}{% endif %}{% endif %}{% else %}{% endif %}</td>
+                  <td class="td-shift">{% if r.check_in %}{% if (r.check_in.astimezone().hour >= 8 and r.check_in.astimezone().hour < 17) %}Mañana (08:00-17:00){% elif (r.check_in.astimezone().hour >= 18 and r.check_in.astimezone().hour < 21) %}Tarde (18:00-21:00){% else %}Otro{% endif %}{% else %}{% endif %}</td>
+                  <td class="td-note">{{ r.note or '' }}</td>
+                  {% if is_admin %}
+                    <td class="td-actions">
+                      <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-edit" data-id="{{ r.id }}">Editar</button>
+                        <button class="btn btn-sm btn-outline-danger btn-delete" data-id="{{ r.id }}">Borrar</button>
+                      </div>
+                    </td>
+                  {% endif %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/static/js/asistencia.js?v=3"></script>
+        <script>
+        // Inline fallback editor to ensure Edit always works (avoids external JS load issues)
+        function createInlineSimpleModal(){
+          if (document.getElementById('inline-simple-edit-modal')) return;
+          const modal = document.createElement('div');
+          modal.id = 'inline-simple-edit-modal';
+          modal.style.position = 'fixed'; modal.style.inset = '0'; modal.style.display = 'none'; modal.style.alignItems = 'center'; modal.style.justifyContent = 'center'; modal.style.zIndex = '2000';
+          modal.innerHTML = `
+            <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5)"></div>
+            <div style="position:relative;z-index:2;background:#fff;padding:14px;border-radius:8px;max-width:480px;width:92%">
+              <h5 style="margin:0 0 8px 0">Editar asistencia</h5>
+              <div style="margin-bottom:8px"><label>Entrada</label><input type="datetime-local" id="inline-checkin" style="width:100%;padding:6px;margin-top:4px"></div>
+              <div style="margin-bottom:8px"><label>Salida</label><input type="datetime-local" id="inline-checkout" style="width:100%;padding:6px;margin-top:4px"></div>
+              <div style="margin-bottom:8px"><label>Estado</label>
+                <select id="inline-status" style="width:100%;padding:6px;margin-top:4px">
+                  <option value="">(automático)</option>
+                  <option value="Asistencia">Asistencia</option>
+                  <option value="Retraso">Retraso</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+              <div style="margin-bottom:8px"><label>Nota</label><input id="inline-note" style="width:100%;padding:6px;margin-top:4px"></div>
+              <div style="text-align:right"><button id="inline-cancel" style="margin-right:8px">Cancelar</button><button id="inline-save">Guardar</button></div>
+            </div>`;
+          document.body.appendChild(modal);
+          document.getElementById('inline-cancel').addEventListener('click', ()=>{ modal.style.display='none'; });
+          document.getElementById('inline-save').addEventListener('click', async ()=>{
+          const id = modal.dataset.attId;
+          function _localToIso(v){ if (!v) return null; try{ const [datePart,timePart]=v.split('T'); if(!datePart||!timePart) return null; const [y,m,d]=datePart.split('-').map(x=>parseInt(x,10)); const [hh,min]=timePart.split(':').map(x=>parseInt(x,10)); const dt=new Date(y,(m||1)-1,d,hh||0,min||0,0); return dt.toISOString(); }catch(e){return null;} }
+          const payload = { check_in: _localToIso(document.getElementById('inline-checkin').value) , check_out: _localToIso(document.getElementById('inline-checkout').value), status: (document.getElementById('inline-status') ? document.getElementById('inline-status').value : null), note: document.getElementById('inline-note').value || null };
+          try{
+          const csrf = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : null;
+          const headers = { 'Content-Type':'application/json', 'X-Requested-With':'XMLHttpRequest' };
+          if (csrf) headers['X-CSRF-Token'] = csrf;
+            const resp = await fetch(`/asistencia/${id}/edit`, { method: 'POST', headers: headers, body: JSON.stringify(payload), credentials: 'same-origin' });
+            const text = await resp.text();
+            let j = null;
+            try { j = JSON.parse(text); } catch(e){ j = null; }
+              if (j && j.ok && j.record){
+                const tr = document.querySelector(`tr[data-id="${id}"]`);
+                if (tr){
+                  tr.setAttribute('data-checkin', j.record.check_in || '');
+                  tr.setAttribute('data-checkout', j.record.check_out || '');
+                  tr.setAttribute('data-note', j.record.note || '');
+                  tr.setAttribute('data-status', j.record.status || '');
+                  // actualizar celdas visibles a HH:MM
+                  try{
+                    function hhmmFromIso(iso){ if(!iso) return ''; try{ if (typeof iso === 'string' && !/[zZ]|[+\-]\d{2}:\d{2}$/.test(iso)) iso = iso + 'Z'; const d = new Date(iso); const hh = String(d.getHours()).padStart(2,'0'); const mm = String(d.getMinutes()).padStart(2,'0'); return hh + ':' + mm; }catch(e){return '';}}
+                    const ci = tr.querySelector('.td-checkin'); if (ci) ci.textContent = j.record.check_in ? hhmmFromIso(j.record.check_in) : '';
+                    const co = tr.querySelector('.td-checkout'); if (co) co.textContent = j.record.check_out ? hhmmFromIso(j.record.check_out) : '';
+                    const noteEl = tr.querySelector('.td-note'); if (noteEl) noteEl.textContent = j.record.note || '';
+                    const statusEl = tr.querySelector('.td-status'); if (statusEl) statusEl.textContent = j.record.status || '';
+                  }catch(e){}
+                }
+                modal.style.display='none';
+                return;
+              }
+            // provide detailed debug info
+            console.error('Edit response status:', resp.status, 'body:', text);
+            const remoteErr = j && (j.error || j.message) ? (j.error || j.message) : null;
+            alert('Error guardando: ' + (remoteErr || ('HTTP ' + resp.status)));
+            }catch(e){ alert('Error de red: '+e.message); }
+          });
+        }
+
+        function openSimpleEdit(btn){
+          createInlineSimpleModal();
+          const tr = btn.closest('tr');
+          const id = btn.getAttribute('data-id') || (tr && tr.getAttribute('data-id'));
+          const checkin = tr ? (tr.getAttribute('data-checkin') || '') : '';
+          const checkout = tr ? (tr.getAttribute('data-checkout') || '') : '';
+          const note = tr ? (tr.getAttribute('data-note') || '') : '';
+          const modal = document.getElementById('inline-simple-edit-modal');
+          function _isoToLocal(iso){ if (!iso) return ''; try{ if (typeof iso === 'string' && !/[zZ]|[+\-]\d{2}:\d{2}$/.test(iso)) iso = iso + 'Z'; const d = new Date(iso); const yyyy=d.getFullYear(); const mm=String(d.getMonth()+1).padStart(2,'0'); const dd=String(d.getDate()).padStart(2,'0'); const hh=String(d.getHours()).padStart(2,'0'); const min=String(d.getMinutes()).padStart(2,'0'); return `${yyyy}-${mm}-${dd}T${hh}:${min}`;}catch(e){return '';} }
+          document.getElementById('inline-checkin').value = checkin ? _isoToLocal(checkin) : '';
+          document.getElementById('inline-checkout').value = checkout ? _isoToLocal(checkout) : '';
+          try{ document.getElementById('inline-status').value = tr ? (tr.getAttribute('data-status') || '') : ''; }catch(e){}
+          document.getElementById('inline-note').value = note || '';
+          modal.dataset.attId = id || '';
+          modal.style.display = 'flex';
+        }
+        </script>
+{% endblock %}
+
+<!-- Edit modal -->
+<div class="modal fade" id="asistenciaEditModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+
+        <!-- Edit modal -->
+        <h5 class="modal-title">Editar registro</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editAttendanceForm">
+          <input type="hidden" name="id" id="edit-id">
+          <div class="mb-2">
+            <label class="form-label">Usuario</label>
+            <input class="form-control form-control-sm" id="edit-username" name="username" readonly>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Rol</label>
+            <input class="form-control form-control-sm" id="edit-role" name="role">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Entrada</label>
+            <input type="datetime-local" class="form-control form-control-sm" id="edit-checkin" name="check_in">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Salida</label>
+            <input type="datetime-local" class="form-control form-control-sm" id="edit-checkout" name="check_out">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Estado</label>
+            <select class="form-control form-control-sm" id="edit-status" name="status">
+              <option value="">(automático)</option>
+              <option value="Asistencia">Asistencia</option>
+              <option value="Retraso">Retraso</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Nota</label>
+            <textarea class="form-control form-control-sm" id="edit-note" name="note"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button id="editSaveBtn" type="button" class="btn btn-primary btn-sm">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>

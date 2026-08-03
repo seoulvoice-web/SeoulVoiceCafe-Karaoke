@@ -1,0 +1,85 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container py-4">
+  <h3>Inventario de Productos</h3>
+  <!-- DEBUG: mostrar usuario de sesión (temporal) -->
+  <div class="mb-2">
+    {% if user %}
+      <div class="alert alert-info py-1">Sesión: <strong>{{ user.username }}</strong> — Admin: <strong>{{ user.is_admin }}</strong></div>
+    {% else %}
+      <div class="alert alert-warning py-1">Sesión: <strong>no iniciada</strong></div>
+    {% endif %}
+  </div>
+  <div class="card mb-3">
+    <div class="card-body">
+      {% if user and user.is_admin %}
+      <form method="post" action="/inventory">
+        <div class="row g-2">
+          <div class="col-md-5">
+            <input name="name" class="form-control" placeholder="Nombre del producto" required />
+          </div>
+          <div class="col-md-3">
+            <input name="price" type="number" step="0.01" min="0" class="form-control" placeholder="Precio" required />
+          </div>
+          <div class="col-md-2">
+            <input name="stock" type="number" min="0" class="form-control" placeholder="Stock" required />
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-success w-100" type="submit" name="action" value="add">Añadir</button>
+          </div>
+        </div>
+      </form>
+      {% else %}
+        <div class="alert alert-secondary mb-0">Inicia sesión como administrador para añadir o editar productos.
+          <a href="/_force_admin_login" class="btn btn-sm btn-primary ms-2">Iniciar sesión demo admin</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h5>Productos</h5>
+      <table class="table table-sm">
+        <thead>
+          <tr><th>Nombre</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr>
+        </thead>
+        <tbody>
+          {% for p in products %}
+            {% if user and user.is_admin %}
+              <tr data-product-id="{{ p.id }}" class="row-editable">
+                <td>
+                  <input name="edit_name" value="{{ p.name }}" class="form-control form-control-sm" readonly data-original-value="{{ p.name }}" />
+                </td>
+                <td>
+                  <input name="edit_price" value="{{ '%.2f'|format(p.price) }}" class="form-control form-control-sm" readonly data-original-value="{{ '%.2f'|format(p.price) }}" />
+                </td>
+                <td>
+                  <input name="edit_stock" value="{{ p.stock }}" class="form-control form-control-sm" readonly data-original-value="{{ p.stock }}" />
+                </td>
+                <td>
+                  <input type="hidden" name="edit_id" value="{{ p.id }}" />
+                  <button class="btn btn-sm btn-outline-primary btn-edit" type="button">Editar</button>
+                  <button class="btn btn-sm btn-primary btn-save d-none" type="button">Guardar</button>
+                  <button class="btn btn-sm btn-secondary btn-cancel d-none" type="button">Cancelar</button>
+                  <button class="btn btn-sm btn-danger ms-1 btn-delete" type="button" data-delete-id="{{ p.id }}">Eliminar</button>
+                </td>
+              </tr>
+            {% else %}
+              <tr data-product-id="{{ p.id }}">
+                <td>{{ p.name }}</td>
+                <td>{{ '%.2f'|format(p.price) }}</td>
+                <td>{{ p.stock }}</td>
+                <td><small class="text-muted">(sólo lectura)</small></td>
+              </tr>
+            {% endif %}
+          {% else %}
+            <tr><td colspan="4">No hay productos.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+  <script src="/static/js/inventory.js"></script>
+{% endblock %}

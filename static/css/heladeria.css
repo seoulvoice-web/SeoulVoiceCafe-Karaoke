@@ -1,0 +1,58 @@
+/* Estilos específicos para la página de Heladería */
+:root{
+  --hel-bg: #fffaf0;
+  --hel-accent: #f06292; /* rosado claro */
+  --hel-accent-dark: #d8436e;
+  --hel-card: #ffffff;
+}
+
+.hel-page-header{
+  background: linear-gradient(90deg, rgba(240,248,255,0.9), rgba(255,250,240,0.9));
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+.hel-products {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.hel-card {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform .18s ease, box-shadow .18s ease;
+  background: var(--hel-card);
+}
+.hel-card:hover{ transform: translateY(-6px); box-shadow: 0 8px 24px rgba(0,0,0,0.08);} 
+
+.hel-card img.card-img-top{
+  background: linear-gradient(180deg,#fff 0%, #fffaf6 100%);
+  padding: 12px;
+  height: 160px;
+  object-fit: contain;
+}
+
+.hel-price{
+  font-size: 1.1rem;
+  color: var(--hel-accent-dark);
+}
+
+.hel-stock{ color: #6c757d; font-size: .85rem }
+
+.btn-hel-primary{
+  background: linear-gradient(180deg,var(--hel-accent),var(--hel-accent-dark));
+  border: none;
+}
+.btn-hel-primary:hover{ background: linear-gradient(180deg,var(--hel-accent-dark),#b72854); }
+
+.last-order-card{ background: linear-gradient(90deg,#fff 0%, #fff6f8 100%); border-radius:10px; box-shadow:0 4px 14px rgba(0,0,0,0.06); }
+
+@media (max-width:576px){
+  .hel-card img.card-img-top{ height:120px }
+}
+
+/* Admin table tweaks */
+.table-sm img{ height:28px; object-fit:contain }

@@ -1,0 +1,590 @@
+/* Google fonts: serif para look vintage + sans para UI */
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Montserrat:wght@300;400;600&display=swap');
+body {
+  background-image:
+    linear-gradient(180deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 60%),
+    url('/static/img/placeholder.svg'); /* textura pequeña y repetida; optimizar */
+  background-size: cover, 200px 200px;
+  background-attachment: fixed;
+  background-position: center top, center;
+  color: var(--text-900);
+}
+
+/* Overlay global sutil para mejorar contraste en hero/cards */
+.page-bg-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03));
+  mix-blend-mode: multiply;
+}
+:root{
+	--paper-100: #F7F1E1; /* luz papel */
+	--paper-200: #ECE2C8; /* tono crema */
+	--cream-100: #EFE1C6;
+	--brown-100: #8B5E3C; /* acento principal */
+	--brown-200: #A67848; /* acento suave */
+	--muted-teal: #6B8AA4;
+	--olive-100: #6B8A6B;
+	--text-900: #2b2b2b;
+	--sidebar-duration: 360ms;
+	--overlay-duration: 420ms;
+	--fab-color: #2196F3; /* azul más oscuro para FAB (actualizado) */
+}
+
+
+body { font-family: 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; background: linear-gradient(180deg, var(--paper-100) 0%, var(--paper-200) 60%); color: var(--text-900); }
+#wrapper { min-height: 100vh; }
+#sidebar-wrapper { width: 220px; }
+#page-content-wrapper { padding: 20px; }
+#lyrics p { margin: 8px 0; padding: 6px; }
+#lyrics p.active { background: rgba(167,123,71,0.09); font-weight: 700; color: var(--text-900); }
+
+/* Logo image styling */
+.logo-img {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	object-fit: cover;
+	display: inline-block;
+}
+
+/* Headings use serif for vintage feel */
+h1,h2,h3,h4,h5 { font-family: 'Libre Baskerville', serif; color: var(--brown-100); letter-spacing: 0.2px; margin-bottom: .5rem; }
+h1 { font-size: 1.8rem; }
+
+/* Sidebar vintage tweaks */
+.sidebar-heading strong { font-family: 'Libre Baskerville', serif; color: var(--brown-100); font-weight: 700; letter-spacing: 0.6px; }
+.list-group-item { background: transparent; border: none; color: rgba(43,43,43,0.9); padding-left: 1.05rem; border-left: 4px solid transparent; transition: all 160ms ease; }
+.list-group-item:hover, .list-group-item.active { background: rgba(139,94,60,0.04); border-left-color: var(--brown-100); color: var(--brown-100); }
+
+/* Vintage image treatment */
+.vintage-img { filter: sepia(0.18) contrast(1.04) saturate(0.92); border-radius: 8px; box-shadow: 0 8px 20px rgba(43,43,43,0.06); }
+.vintage-img.rounded { border-radius: 12px; }
+
+/* Card headers and titles */
+.card .card-title, .login-card .card-title { font-family: 'Libre Baskerville', serif; color: var(--brown-100); }
+
+/* Button variations for vintage palette */
+.btn-white-outline { background: #fff; border: 1px solid rgba(139,94,60,0.08); color: var(--brown-100); padding: 10px 12px; border-radius: 10px; }
+.btn-facebook { background: linear-gradient(90deg,var(--muted-teal) 0%, #58798b 100%); color: #fff; border-radius: 10px; }
+
+/* Subtle paper texture overlay (uses blend mode where available) */
+.paper-overlay { background-image: linear-gradient(transparent 0%, rgba(255,255,255,0.02) 100%); mix-blend-mode: multiply; }
+
+#wrapper.show-sidebar #sidebarOverlay {
+	display: block; }
+
+/* Responsive behavior for sidebar */
+@media (max-width: 768px) {
+	/* Sidebar slides in/out using transform for smooth animation */
+	#sidebar-wrapper {
+		position: fixed;
+		left: 0;
+		top: 0;
+		height: 100%;
+		z-index: 1040;
+		background: #fff;
+		width: 220px;
+		box-shadow: 2px 0 12px rgba(0,0,0,0.12);
+		transform: translateX(-100%);
+		transition: transform 320ms cubic-bezier(.2,.9,.2,1);
+		will-change: transform;
+	}
+	/* When active, slide into view */
+	#wrapper.show-sidebar #sidebar-wrapper { transform: translateX(0); }
+
+	#page-content-wrapper { padding: 12px; }
+	.logo-img { width: 40px; height: 40px; }
+}
+
+/* Overlay for mobile sidebar with fade and subtle blur */
+#sidebarOverlay {
+	visibility: hidden;
+	opacity: 0;
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,0.35);
+	z-index: 1030;
+	transition: opacity var(--overlay-duration) cubic-bezier(.2,.9,.2,1), visibility var(--overlay-duration) cubic-bezier(.2,.9,.2,1), backdrop-filter var(--overlay-duration) ease;
+	backdrop-filter: blur(0px);
+}
+
+/* Visible state toggled via JS */
+#sidebarOverlay.visible {
+	visibility: visible;
+	opacity: 0.5;
+	backdrop-filter: blur(4px);
+}
+
+/* Ensure the overlay becomes visible when wrapper requests sidebar shown (covers content but stays under sidebar) */
+/* overlay is appended to <body> after #wrapper, so use the general sibling selector */
+#wrapper.show-sidebar ~ #sidebarOverlay { visibility: visible; opacity: 0.5; backdrop-filter: blur(4px); }
+
+/* Login card styles */
+.login-wrapper { max-width: 520px; margin: 24px auto; padding: 16px; }
+.login-card { border-radius: 14px; background: linear-gradient(180deg, rgba(255,250,242,0.98), rgba(247,238,224,0.95)); box-shadow: 0 12px 30px rgba(43,43,43,0.06); border: 1px solid rgba(139,94,60,0.12); }
+.login-card .card-body { padding: 28px; }
+.login-card .card-title { font-weight: 700; font-size: 1.125rem; margin-bottom: 0.75rem; color: var(--text-900); }
+.btn-gradient { background: linear-gradient(90deg,var(--brown-100) 0%, var(--brown-200) 100%); color: #fff; border: none; padding: 12px 18px; border-radius: 10px; font-weight: 700; font-size: 1rem; box-shadow: 0 8px 18px rgba(139,94,60,0.08); }
+.btn-gradient:hover { transform: translateY(-1px); box-shadow: 0 14px 34px rgba(139,94,60,0.14); }
+.btn-gradient:active, .btn-gradient:focus { outline: none; box-shadow: 0 8px 20px rgba(139,94,60,0.12); }
+.divider { border-top: 1px solid rgba(15,23,42,0.04); position: relative; }
+.divider small { position: relative; top: -0.6em; background: transparent; padding: 0 12px; color: rgba(15,23,42,0.45); }
+.input-with-icon .form-control { padding-left: 14px; border-radius: 10px; height: 48px; border: 1px solid rgba(15,23,42,0.06); background: #fff; }
+.input-with-icon .form-control:focus { border-color: var(--gold-200); box-shadow: 0 6px 18px rgba(212,175,55,0.06); }
+.social-icons a { color: rgba(0,0,0,0.75); text-decoration: none; font-weight: 600; }
+.social-icon svg { display: inline-block; vertical-align: middle; filter: none; }
+.social-icon { margin: 0 6px; display: inline-block; }
+.social-icon img { width: 20px; height: 20px; display: inline-block; vertical-align: middle; filter: grayscale(100%); opacity: 0.95; }
+.social-icon svg { width: 20px; height: 20px; vertical-align: middle; color: #000; opacity: 0.95; filter: grayscale(100%); transition: transform 140ms ease, filter 140ms ease, opacity 140ms ease; }
+.social-icon:hover svg { filter: none; opacity: 1; transform: translateY(-2px); }
+.contact-info { color: rgba(0,0,0,0.7); font-size: 0.95rem; }
+.contact-info a { color: inherit; text-decoration: none; font-weight: 600; }
+
+@media (max-width: 480px) {
+	.login-wrapper { padding: 12px; }
+	.login-card { margin: 8px; }
+	.login-card .card-body { padding: 18px; }
+	.btn-gradient { padding: 10px 14px; }
+}
+
+/* Small improvement: ensure login card stays vertically centered but allows scroll on very small/tall devices */
+.auth-page { min-height: calc(100vh - 56px); display:flex; align-items:center; justify-content:center; }
+.auth-page .login-wrapper { width:100%; max-width:560px; padding-left:12px; padding-right:12px; }
+@media (min-width: 769px) {
+	/* Desktop: position the sidebar fixed so when hidden it doesn't reserve layout space */
+	#sidebar-wrapper {
+		display: block;
+		position: fixed;
+		left: 0;
+		top: 0;
+		height: 100%;
+		z-index: 1040;
+		background: #fff;
+		width: 220px;
+		transform: translateX(-100%);
+		transition: transform var(--sidebar-duration) cubic-bezier(.2,.9,.2,1), box-shadow var(--sidebar-duration) ease;
+		will-change: transform, box-shadow;
+	}
+	/* When wrapper is NOT collapsed, show sidebar and add shadow */
+	#wrapper:not(.collapsed) #sidebar-wrapper { transform: translateX(0); box-shadow: 0 18px 40px rgba(15,23,42,0.12); }
+
+	/* Page content shifts when sidebar visible; when collapsed it occupies full width */
+	#page-content-wrapper { transition: none; margin-left: 0 !important; width: 100% !important; }
+	#wrapper:not(.collapsed) #sidebar-wrapper { transform: translateX(0); box-shadow: 0 18px 40px rgba(15,23,42,0.12); z-index: 1050; }
+	#wrapper.collapsed #page-content-wrapper { width: 100% !important; margin-left: 0 !important; }
+}
+
+/* Login - professional enhancements */
+.login-hero .large { width: 76px; height: 76px; }
+.login-hero h1 { font-size: 1.6rem; margin: 0 0 4px; }
+.muted-lead { color: rgba(15,23,42,0.6); margin-bottom: 8px; }
+.login-card-wide { max-width: 920px; overflow: hidden; border-radius: 14px; }
+.login-card .card-body { padding: 28px; }
+.login-visual { background: linear-gradient(180deg, rgba(239,232,220,0.45), rgba(245,239,230,0.25)); height: 100%; background-image: linear-gradient(135deg, rgba(139,94,60,0.03), rgba(150,120,80,0.02)); }
+.input-with-icon .input-group-text { width: 44px; justify-content: center; border-radius: 10px 0 0 10px; }
+.input-with-icon .form-control { border-radius: 0 10px 10px 0; height: 48px; }
+.btn-white-outline { background: #fff; border: 1px solid rgba(15,23,42,0.06); color: var(--text-900); padding: 10px 12px; border-radius: 10px; }
+.btn-white-outline:hover { background: #fbfbfb; }
+
+/* Facebook button prominent style */
+.btn-facebook { display: inline-flex; align-items: center; gap: 10px; padding: 10px 12px; background: #1877F2; color: white; border-radius: 10px; text-decoration: none; border: none; justify-content: center; }
+.btn-facebook:hover { filter: brightness(0.95); transform: translateY(-1px); }
+.btn-facebook .btn-icon { width: 18px; height: 18px; display: inline-block; }
+
+@media (max-width: 767px) {
+	.login-card-wide { max-width: 100%; }
+	.login-visual { height: 120px; }
+}
+
+/* small tweaks for alerts inside card */
+.login-card .alert { margin-top: 6px; margin-bottom: 12px; }
+
+/* Auth page centering specifics */
+.auth-page { padding: 18px; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 48px); }
+.auth-page .logo-img { width: 110px; height: 110px; border-radius: 12px; }
+.auth-page .logo-img { margin-top: 8px; margin-bottom: -10px; }
+.auth-page .login-wrapper { margin: 0 auto; max-width: 520px; }
+.auth-page .card { box-shadow: 0 18px 40px rgba(15,23,42,0.08); }
+.auth-page { margin-left: 0 !important; }
+
+/* Ensure login wrapper centers its card even if page content has left margin */
+.auth-page .login-wrapper { display: flex; justify-content: center; align-items: center; flex-direction: column; }
+.auth-page .login-card { width: 100%; max-width: 560px; margin: 0 auto; }
+.auth-page .login-card .card-body { padding: 20px; }
+
+
+/* Force a tighter auth layout to avoid wide cards or overflow */
+.auth-page .login-wrapper { max-width: 560px !important; width: 100%; padding: 0 12px; }
+.auth-page .login-card-wide { max-width: 100%; }
+.auth-page .login-visual { border-radius: 12px; }
+.auth-page .login-hero { margin-bottom: 8px; }
+
+/* Ensure the hero and card stack nicely on small/medium screens */
+@media (max-width: 991px) {
+	.auth-page .login-visual { display: none; }
+	.auth-page .login-card { border-radius: 12px; }
+}
+
+/* Ensure the login wrapper doesn't become too wide on very large viewports */
+@media (min-width: 1400px) {
+	.auth-page .login-wrapper { max-width: 560px; }
+}
+
+/* Tweak spacing for taller viewports so card stays centered without excessive top/bottom gaps */
+@media (min-height: 900px) {
+	.auth-page { min-height: calc(100vh - 100px); }
+}
+
+/* Floating contact FAB styles */
+.contact-fab-wrapper { position: fixed; right: 12px; bottom: 12px; z-index: 2000; display: flex; align-items: flex-end; gap: 10px; }
+.contact-fab { width: 72px; height: 72px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; border: none; cursor: pointer; box-shadow: 0 14px 36px rgba(43,43,43,0.14); background: linear-gradient(90deg,var(--fab-color) 0%, color-mix(in srgb, var(--fab-color) 80%, #ffffff 20%)); color: #fff; }
+.contact-fab svg { display: block; }
+.fab-menu { display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px; align-items: center; transition: opacity 180ms ease, transform 180ms ease; opacity: 0; transform: translateY(6px); pointer-events: none; }
+.contact-fab-wrapper.open .fab-menu { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.fab-item { width: 44px; height: 44px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: #fff; border: 1px solid rgba(15,23,42,0.06); box-shadow: 0 8px 18px rgba(15,23,42,0.06); }
+.fab-item img { width: 20px; height: 20px; display: block; filter: none; }
+
+@media (max-width: 480px) {
+	.contact-fab { width: 76px; height: 76px; }
+	.fab-item { width: 48px; height: 48px; }
+}
+
+/* Closed state: keep button visible but reduce footprint and push slightly to edge so it doesn't block content */
+.contact-fab-wrapper.closed { transform: translateY(6px); }
+.contact-fab-wrapper.closed .fab-menu { opacity: 0 !important; transform: translateY(8px) !important; pointer-events: none !important; }
+.contact-fab-wrapper.closed .contact-fab { box-shadow: 0 8px 18px rgba(43,43,43,0.06); opacity: 0.95; }
+
+/* When open, ensure menu floats above content without covering important bottom UI */
+.contact-fab-wrapper.open { right: 18px; bottom: 18px; }
+.contact-fab-wrapper.open .fab-menu { margin-bottom: 8px; }
+
+/* Do not let the FAB overlap the page's bottom fixed bars on small devices (safe area) */
+.contact-fab-wrapper { padding-bottom: env(safe-area-inset-bottom); }
+
+/* On very small screens make FAB less intrusive and nudge left to avoid common bottom-right controls */
+@media (max-width: 520px) {
+	.contact-fab-wrapper { right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); }
+	.contact-fab { width: 56px; height: 56px; }
+	.contact-fab svg { width: 18px; height: 18px; }
+	.contact-fab-wrapper.avoid-bottom { bottom: calc(150px + env(safe-area-inset-bottom)) !important; }
+}
+
+/* Slight left nudge for compact narrow layouts so it doesn't block action buttons in many invoice layouts */
+@media (max-width: 420px) {
+	.contact-fab-wrapper { right: 6px; }
+}
+
+/* Accessibility: bigger touch target on mobile when menu open */
+@media (max-width: 480px) {
+ 	.contact-fab-wrapper.open .contact-fab { width: 88px; height: 88px; }
+}
+
+/* Responsive adjustments: ensure comfortable layout on desktop and mobile */
+/* Larger container on desktop, full-width stacking on small screens */
+.login-wrapper { max-width: 980px; margin: 28px auto; padding: 18px; }
+
+/* Make sure page content has enough breathing room on large screens */
+@media (min-width: 1200px) {
+	#page-content-wrapper { padding: 32px 48px; }
+}
+
+/* Sidebar: hide overlay/transform behavior cutoff for tablets */
+@media (max-width: 991px) {
+	#sidebar-wrapper { transform: translateX(-100%); position: fixed; z-index: 1040; }
+	#wrapper.show-sidebar #sidebar-wrapper { transform: translateX(0); }
+	#page-content-wrapper { padding: 16px; }
+}
+
+/* Login card: stack columns on small screens and increase touch targets */
+@media (max-width: 767px) {
+	.login-card .card-body { padding: 18px; }
+	.input-with-icon .form-control { height: 54px; font-size: 1rem; }
+	.btn-gradient, .btn-white-outline, .btn-facebook { padding: 14px 12px; font-size: 1rem; border-radius: 12px; }
+	.login-hero h1 { font-size: 1.25rem; }
+	.muted-lead { font-size: 0.95rem; }
+	.login-visual { height: 140px; }
+}
+
+/* FAB and small items: make touch-friendly on mobile */
+@media (max-width: 480px) {
+ 	.contact-fab-wrapper { right: 14px; bottom: 14px; }
+ 	.contact-fab { width: 76px; height: 76px; }
+ 	.fab-item { width: 48px; height: 48px; }
+ 	.fab-menu { gap: 8px; }
+}
+
+/* When invoice or other action area exists, move FAB to the left side to avoid overlapping important buttons */
+.contact-fab-wrapper.invoice-left { left: 12px; right: auto; }
+.contact-fab-wrapper.invoice-left.open { left: 18px; }
+
+@media (max-width: 520px) {
+  .contact-fab-wrapper.invoice-left { left: 8px; right: auto; }
+  .contact-fab-wrapper.invoice-left.avoid-bottom { bottom: calc(150px + env(safe-area-inset-bottom)) !important; }
+}
+
+/* If a prominent bottom control exists (e.g. invoice actions), lift the FAB so it doesn't overlap */
+.contact-fab-wrapper.avoid-bottom { bottom: 140px !important; }
+@media (max-width: 480px) {
+	.contact-fab-wrapper.avoid-bottom { bottom: 170px !important; }
+}
+
+/* Ensure SVG icons scale and remain legible */
+.social-icon svg { width: 20px; height: 20px; }
+.social-icons { display: inline-flex; align-items: center; justify-content: center; }
+
+/* Accessibility: increase focus outlines for keyboard users */
+.contact-fab:focus, .fab-item:focus, .btn-facebook:focus, .btn-white-outline:focus, .btn-gradient:focus {
+	outline: 3px solid rgba(212,175,55,0.18);
+	outline-offset: 2px;
+}
+
+/* Small utility: collapse sidebar on small heights to avoid overlap with FAB */
+@media (max-height: 640px) and (max-width: 480px) {
+	#sidebar-wrapper { top: 0; height: calc(100% - 72px); }
+}
+
+/* Ensure full login is visible on short/tall viewports and allow scrolling */
+@media (max-height: 760px) {
+	/* allow auth page to start near the top instead of perfectly centered */
+	#authPage, .auth-page { align-items: flex-start; padding-top: 14px; padding-bottom: 14px; }
+	/* reduce logo space so form fits */
+	#authPage .logo-img, .auth-page .logo-img { margin-top: 8px; margin-bottom: 0; width: 80px; height: 80px; }
+	/* make the card scrollable if it grows too tall */
+	.login-card { max-height: calc(100vh - 160px); overflow-y: auto; }
+	.login-card .card-body { padding: 18px; }
+}
+
+/* Also handle narrow mobile screens: keep content accessible and reduce paddings */
+@media (max-width: 480px) {
+	#authPage, .auth-page { padding-left: 12px; padding-right: 12px; }
+	#authPage .logo-img, .auth-page .logo-img { width: 72px; height: 72px; margin-top: 8px; margin-bottom: 0; }
+	.login-card { margin: 6px; }
+	.login-card .card-body { padding: 14px; }
+}
+
+/* Sidebar scrollbar when a nested group is opened */
+#sidebar-wrapper.sidebar-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#sidebar-wrapper.sidebar-scroll .list-group {
+  padding-bottom: 28px; /* leave space for bottom controls */
+}
+@media (min-width: 769px) {
+  #sidebar-wrapper.sidebar-scroll { max-height: calc(100vh - 56px); }
+}
+
+/* Home hero/banner */
+.home-hero {
+	position: relative;
+	border-radius: 12px;
+	overflow: hidden;
+	/* for carousel wrapper, individual items set background-image */
+	background: transparent;
+	color: #fff;
+	min-height: 260px;
+	display: block;
+}
+.home-hero .hero-content {
+	position: relative;
+	z-index: 2;
+	padding: 28px;
+}
+.home-hero .hero-title { font-size: 1.8rem; font-weight: 700; color: #fff; margin-bottom: .25rem; }
+.home-hero .hero-lead { color: rgba(255,255,255,0.9); margin-bottom: 12px; }
+.home-hero .hero-cta { margin-top: 8px; }
+.home-hero::after {
+	/* subtle vignette */
+	content: '';
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: radial-gradient(60% 60% at 50% 70%, rgba(0,0,0,0.12), rgba(0,0,0,0.32));
+}
+
+@media (max-width: 767px) {
+	.home-hero { min-height: 160px; }
+	.home-hero .hero-content { padding: 16px; }
+	.home-hero .hero-title { font-size: 1.25rem; }
+}
+
+/* Carousel-specific styling */
+.home-hero .carousel-item {
+	min-height: 260px;
+	background-size: cover;
+	background-position: center center;
+	background-repeat: no-repeat;
+	display: none; /* hide non-active slides to avoid stacking */
+}
+.home-hero .carousel-item.active {
+	display: flex;
+	align-items: center;
+}
+.home-hero .carousel-caption {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	left: 28px;
+	right: auto;
+	padding: 0 28px;
+	text-align: left;
+}
+.home-hero .carousel-caption .hero-content { background: rgba(0,0,0,0.32); display: inline-block; padding: 12px; border-radius: 8px; }
+.home-hero .hero-title { text-shadow: 0 6px 18px rgba(0,0,0,0.45); }
+.home-hero .hero-lead { text-shadow: 0 4px 12px rgba(0,0,0,0.35); }
+
+@media (max-width: 767px) {
+	.home-hero .carousel-item { min-height: 160px; }
+	.home-hero .carousel-caption { padding: 12px; }
+}
+
+/* Controls visibility and styling inside home-hero */
+.home-hero .carousel-control-prev,
+.home-hero .carousel-control-next {
+	width: 56px;
+	height: 56px;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 6;
+	opacity: 0.98;
+	background: rgba(0,0,0,0.28);
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: auto;
+}
+.home-hero .carousel-control-prev { left: 12px; }
+.home-hero .carousel-control-next { right: 12px; }
+.home-hero .carousel-control-prev-icon,
+.home-hero .carousel-control-next-icon {
+	filter: invert(1) brightness(1.2);
+	background-size: 20px 20px;
+}
+
+/* Ensure indicators are above slides */
+.home-hero .carousel-indicators { z-index: 7; }
+
+/* Quick action buttons on carousel */
+.carousel-actions {
+	position: absolute;
+	bottom: 18px;
+	left: 28px;
+	z-index: 9;
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+.carousel-actions .btn { padding: 6px 10px; font-size: 0.9rem; }
+.carousel-actions .btn.btn-white-outline { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.12); }
+.carousel-actions .btn.btn-white-outline:hover { background: rgba(255,255,255,0.12); }
+
+@media (max-width: 767px) {
+	.carousel-actions { left: 12px; bottom: 12px; gap: 6px; }
+	.carousel-actions .btn { font-size: 0.85rem; padding: 6px 8px; }
+}
+
+/* Styles for slide-specific actions */
+.slide-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.slide-actions .btn { padding: 6px 10px; font-size: 0.9rem; }
+.slide-actions .btn.btn-white-outline { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.12); }
+.slide-actions .btn.btn-white-outline:hover { background: rgba(255,255,255,0.12); }
+
+@media (max-width: 767px) {
+	.slide-actions { gap: 6px; }
+	.slide-actions .btn { font-size: 0.82rem; padding: 6px 8px; }
+}
+
+	/* Card-style content inside each slide */
+	.card-slide {
+		background: rgba(255,255,255,0.98);
+		color: var(--text-900);
+		padding: 20px 22px;
+		border-radius: 14px;
+		max-width: 680px;
+		box-shadow: 0 20px 50px rgba(15,23,42,0.18);
+		border: 1px solid rgba(15,23,42,0.06);
+	}
+	.card-slide .hero-title { color: var(--brown-100); margin-bottom: 6px; }
+	.card-slide .hero-lead { color: rgba(15,23,42,0.78); }
+	.card-slide .btn-gradient { margin-top: 10px; }
+
+	@media (max-width: 991px) {
+		.card-slide { max-width: calc(100% - 40px); padding: 14px; }
+	}
+
+	/* --- Blur background + card animations (opción 3 + 6) --- */
+	.home-hero .carousel-item { position: relative; overflow: hidden; }
+	.home-hero .carousel-item::after {
+		/* overlay que aplica blur al fondo y atempera colores */
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: rgba(0,0,0,0.28);
+		-webkit-backdrop-filter: blur(6px);
+		backdrop-filter: blur(6px);
+		pointer-events: none;
+		z-index: 2;
+	}
+
+	/* Asegurar que la tarjeta está por encima del overlay */
+	.home-hero .carousel-caption, .home-hero .hero-content { position: relative; z-index: 3; }
+
+	/* Card entrance animation */
+	@keyframes cardSlideUp {
+		from { transform: translateY(18px) scale(.995); opacity: 0; }
+		to   { transform: translateY(0) scale(1); opacity: 1; }
+	}
+	.home-hero .carousel-item .card-slide { transform-origin: center; opacity: 0; }
+	.home-hero .carousel-item.active .card-slide {
+		animation: cardSlideUp 640ms cubic-bezier(.2,.9,.25,1) both;
+	}
+
+	/* Slight stagger for inner elements */
+	.home-hero .carousel-item.active .card-slide .hero-title { animation: fadeIn 520ms ease 120ms both; }
+	.home-hero .carousel-item.active .card-slide .hero-lead { animation: fadeIn 520ms ease 220ms both; }
+	.home-hero .carousel-item.active .card-slide .btn { animation: fadeInUp 520ms ease 320ms both; }
+
+	@keyframes fadeIn {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+	@keyframes fadeInUp {
+		from { opacity: 0; transform: translateY(10px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	/* Button micro-interaction */
+	.card-slide .btn-gradient { transition: transform 160ms ease, box-shadow 160ms ease; }
+	.card-slide .btn-gradient:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(15,23,42,0.14); }
+
+	/* Reduce blur & shadows on small screens for performance */
+	@media (max-width: 767px) {
+		.home-hero .carousel-item::after { -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); background: rgba(0,0,0,0.22); }
+		.home-hero .carousel-item.active .card-slide { animation-duration: 520ms; }
+	}
+
+/* Make hero full-bleed inside the page content so the body gradient doesn't show at the edges */
+#page-content-wrapper .home-hero {
+	margin-left: -20px;
+	margin-right: -20px;
+	width: calc(100% + 40px);
+}
+
+@media (min-width: 1200px) {
+	#page-content-wrapper .home-hero {
+		margin-left: -48px; /* matches #page-content-wrapper padding on wide screens */
+		margin-right: -48px;
+		width: calc(100% + 96px);
+	}
+}
+
+@media (max-width: 767px) {
+	#page-content-wrapper .home-hero {
+		margin-left: -12px; /* small screen padding correction */
+		margin-right: -12px;
+		width: calc(100% + 24px);
+	}
+}

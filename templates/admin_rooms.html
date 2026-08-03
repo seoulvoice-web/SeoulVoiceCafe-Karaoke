@@ -1,0 +1,37 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h2>Desglose por sala</h2>
+<form method="get" class="mb-3">
+  <label>Desde: <input type="date" name="start" value="{{ start or '' }}"></label>
+  <label>Hasta: <input type="date" name="end" value="{{ end or '' }}"></label>
+  <button class="btn btn-primary" type="submit">Filtrar</button>
+  <a class="btn btn-secondary" href="{{ url_for('admin_rooms') }}">Quitar filtros</a>
+  <button class="btn btn-outline-success" name="export" value="csv">Exportar CSV</button>
+  <button class="btn btn-outline-danger" name="export" value="pdf">Exportar PDF</button>
+</form>
+<div class="mb-3">
+  <a class="btn btn-sm btn-success" href="{{ url_for('admin_rooms') }}?export=csv">Descargar CSV (live)</a>
+  <a class="btn btn-sm btn-link" href="/scripts/reports/room_breakdown.csv" target="_blank">Abrir CSV generado (scripts/reports)</a>
+</div>
+<table class="table table-sm table-striped">
+  <thead>
+    <tr><th>Sala</th><th>Tickets</th><th>Ingresos (BOB)</th></tr>
+  </thead>
+  <tbody>
+    {% for r in per_room %}
+    <tr>
+      <td>{{ r.room }}</td>
+      <td>{{ r.tickets }}</td>
+      <td>{{ '%.2f'|format(r.income) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th>Total</th>
+      <th>{{ total_tickets }}</th>
+      <th>{{ '%.2f'|format(total_revenue) }}</th>
+    </tr>
+  </tfoot>
+</table>
+{% endblock %}

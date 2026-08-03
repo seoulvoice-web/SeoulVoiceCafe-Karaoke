@@ -1,0 +1,71 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <h3>Informe Heladería</h3>
+    <p class="text-muted">Desglose por vendedor y por periodo.</p>
+  </div>
+</div>
+<div class="row mb-3">
+  <div class="col-12">
+    <form class="row g-2" method="get" action="{{ url_for('heladeria_report') }}">
+      <div class="col-auto">
+        <input type="date" name="start" class="form-control" value="{{ request.args.get('start','') }}">
+      </div>
+      <div class="col-auto">
+        <input type="date" name="end" class="form-control" value="{{ request.args.get('end','') }}">
+      </div>
+      <div class="col-auto">
+        <select name="group" class="form-select">
+          <option value="day" {% if request.args.get('group','day')=='day' %}selected{% endif %}>Por día</option>
+          <option value="month" {% if request.args.get('group')=='month' %}selected{% endif %}>Por mes</option>
+        </select>
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-primary">Generar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <h5>Por vendedor</h5>
+    <table class="table table-sm">
+      <thead><tr><th>Vendedor</th><th class="text-end">Tickets</th><th class="text-end">Importe (Bs)</th></tr></thead>
+      <tbody>
+        {% for s in report.per_seller %}
+        <tr>
+          <td>{{ s.seller }}</td>
+          <td class="text-end">{{ s.tickets }}</td>
+          <td class="text-end">{{ '%.2f'|format(s.amount) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="col-md-6">
+    <h5>Por periodo</h5>
+    <table class="table table-sm">
+      <thead><tr><th>Periodo</th><th class="text-end">Tickets</th><th class="text-end">Importe (Bs)</th></tr></thead>
+      <tbody>
+        {% for p in report.per_period %}
+        <tr>
+          <td>{{ p.period }}</td>
+          <td class="text-end">{{ p.tickets }}</td>
+          <td class="text-end">{{ '%.2f'|format(p.amount) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="row mt-3">
+  <div class="col-12">
+    <h6>Total ventas heladería: <strong>{{ '%.2f'|format(report.total_amount) }} Bs</strong></h6>
+  </div>
+</div>
+
+{% endblock %}

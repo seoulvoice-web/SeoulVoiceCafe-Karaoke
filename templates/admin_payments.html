@@ -1,0 +1,60 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container py-4">
+  <h3>Pagos Yape - Administración</h3>
+  <p class="text-muted">Lista de pagos registrados (pendientes / pagados). Usa el botón Confirmar para marcar como pagado.</p>
+  <div class="table-responsive">
+    <table class="table table-sm">
+      <thead>
+        <tr><th>Referencia</th><th>Monto</th><th>Comprador</th><th>Ticket</th><th>Estado</th><th>Creado</th><th>Acciones</th></tr>
+      </thead>
+      <tbody>
+        {% for p in payments %}
+        <tr id="pay-{{ p.reference }}">
+          <td>{{ p.reference }}</td>
+          <td>{{ '%.2f'|format(p.amount) }} Bs</td>
+          <td>{{ p.buyer or '' }}</td>
+          <td>{% if p.ticket_id %}<a href="{{ url_for('invoice_ticket', ticket_id=p.ticket_id) }}">#{{ p.ticket_id }}</a>{% else %}—{% endif %}</td>
+          <td class="status">{{ p.status }}</td>
+          <td>{{ p.created_at }}</td>
+          <td>
+            {% if p.status != 'paid' %}
+            <button class="btn btn-sm btn-success confirm-pay" data-ref="{{ p.reference }}">Confirmar</button>
+            {% else %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('invoice_ticket', ticket_id=p.ticket_id) if p.ticket_id else '#' }}" target="_blank">Ver factura</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('.confirm-pay').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var ref = btn.dataset.ref;
+      if (!confirm('Confirmar pago ' + ref + ' ?')) return;
+      fetch('/api/payments/confirm', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({reference: ref}) })
+        .then(r=>r.json()).then(function(data){
+          if (data && data.ok) {
+            var row = document.getElementById('pay-' + ref);
+            if (row) row.querySelector('.status').textContent = 'paid';
+            if (data.invoice_url) {
+              alert('Pago confirmado. URL factura: ' + data.invoice_url);
+              window.open(data.invoice_url, '_blank');
+            } else {
+              alert('Pago confirmado.');
+            }
+          } else {
+            alert('Error: ' + (data && data.error ? data.error : 'unknown'));
+          }
+        }).catch(function(e){ console.error(e); alert('Error confirmando pago'); });
+    });
+  });
+});
+</script>
+
+{% endblock %}

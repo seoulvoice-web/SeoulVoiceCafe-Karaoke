@@ -1,0 +1,80 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Notificaciones</h3>
+  </div>
+  {% if notifications and notifications|length > 0 %}
+    <div class="list-group">
+      {% for n in notifications %}
+        <div class="list-group-item d-flex justify-content-between align-items-start" data-ref="{{ n.reference }}">
+          <div class="ms-2 me-auto">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">{{ n.title or ('Notificación ' ~ loop.index) }}</h6>
+              <small class="text-muted">{{ n.created_at }}</small>
+            </div>
+            <p class="mb-1">{{ n.body or ('Monto: ' ~ (n.amount or '-') ) }}</p>
+            <small class="text-muted status-text">Estado: {{ n.status }}</small>
+          </div>
+          <div class="btn-group ms-3">
+            {% if n.status != 'read' %}
+              <button class="btn btn-sm btn-outline-primary mark-read-btn" data-ref="{{ n.reference }}">Marcar leído</button>
+            {% else %}
+              <span class="badge bg-secondary">Leído</span>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">No hay notificaciones públicas.</div>
+  {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('.mark-read-btn').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      var ref = btn.getAttribute('data-ref');
+      if(!ref) return;
+      btn.disabled = true;
+      fetch('/notifications/mark_read', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ reference: ref })
+      }).then(function(r){ return r.json(); }).then(function(j){
+        if(j && j.success){
+          var item = btn.closest('[data-ref]');
+          if(item){
+            var status = item.querySelector('.status-text');
+            if(status) status.textContent = 'Estado: read';
+            btn.parentNode.innerHTML = '<span class="badge bg-secondary">Leído</span>';
+          }
+          // decrement sidebar badge if present
+          try{
+            var sideBadge = document.querySelector('a[href="/notifications"] .badge');
+            if(sideBadge){
+              var current = parseInt(sideBadge.textContent) || 0;
+              var next = Math.max(0, current - 1);
+              if(next > 0) sideBadge.textContent = next; else sideBadge.remove();
+            }
+            var topBadge = document.querySelector('a[href="/notifications"] .badge');
+            if(topBadge){ /* handled above */ }
+          }catch(e){ /* ignore */ }
+        } else {
+          btn.disabled = false;
+          alert('Error marcando como leído');
+        }
+      }).catch(function(err){
+        btn.disabled = false;
+        alert('Error de red');
+      });
+    });
+  });
+});
+</script>
+
+{% endblock %}

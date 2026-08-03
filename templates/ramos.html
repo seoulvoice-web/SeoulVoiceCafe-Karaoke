@@ -1,0 +1,62 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+  <div class="container">
+    <div class="row mb-3">
+      <div class="col-12">
+        <h2 class="mb-1">{{ heading }}</h2>
+        <p class="text-muted">Selecciona tu ramo de rosas. Compra segura, entrega rápida y presentación premium.</p>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      {% for p in items %}
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="card h-100 product-card">
+            <img src="{{ p.image }}" class="card-img-top" style="width:100%;height:160px;object-fit:cover;border-bottom:1px solid #eee;" alt="{{ p.name }}">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">{{ p.name }}</h5>
+              {% if p.description %}<p class="card-text text-muted small">{{ p.description }}</p>{% endif %}
+              <div class="mt-auto">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div class="h5 mb-0 text-danger">{{ (p.price_bs|float)|round(2) }} Bs</div>
+                  <div class="small text-muted">SKU: {{ p.sku }}</div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div>
+                    <span class="badge bg-success">Disponible: <span class="product-stock">{{ p.stock }}</span></span>
+                  </div>
+                  <div>
+                    <input type="number" min="1" value="1" class="form-control form-control-sm qty-input" style="width:80px; display:inline-block;">
+                  </div>
+                </div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-primary btn-buy" data-id="{{ p.id }}">Comprar</button>
+                  <button class="btn btn-outline-secondary btn-view" data-id="{{ p.id }}">Ver</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="col-12">
+          <div class="alert alert-info">No hay ramos disponibles en este momento.</div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body">
+            <h5>Entrega y presentación</h5>
+            <p class="mb-0 text-muted">Nuestros ramos son presentados con papel premium, lazos y una tarjeta opcional. Entrega en la ciudad 24-48h. Para envíos urgentes contáctanos por WhatsApp.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/static/js/ramos.js"></script>
+{% endblock %}
